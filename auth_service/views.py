@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from auth.serializers import RegisterSerializer, LoginSerializer
+from auth_service.serializers import RegisterSerializer, LoginSerializer
 
 
 class RegisterView(generics.CreateAPIView):

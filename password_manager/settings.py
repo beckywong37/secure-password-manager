@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "hello",
-    "auth"
+    "auth_service"
 ]
 
 # DRF configuration
@@ -143,4 +143,4 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User model for authentication from auth app
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'auth_service.User'

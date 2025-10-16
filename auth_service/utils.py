@@ -21,51 +21,27 @@ def _to_bytes(value: str | bytes) -> bytes:
     return value if isinstance(value, bytes) else value.encode('utf-8')
 
 
-def derive_vault_key(
-    email: str | bytes,
-    master_password: str | bytes
-) -> bytes:
+def derive_vault_key(email: str | bytes, master_password: str | bytes) -> bytes:
     """
     Derive a 256-bit (32 byte) AES vault key by hashing/salting
     the master password with the email address.
     Performs 100,000 iterations using PBKDF2 HMAC SHA256.
     """
-    return hashlib.pbkdf2_hmac(
-        'sha256',
-        _to_bytes(master_password),
-        _to_bytes(email),
-        100000,
-        32
-    )
+    return hashlib.pbkdf2_hmac('sha256', _to_bytes(master_password), _to_bytes(email), 100000, 32)
 
 
-def derive_auth_key(
-    vault_key: str | bytes,
-    master_password: str | bytes
-) -> bytes:
+def derive_auth_key(vault_key: str | bytes, master_password: str | bytes) -> bytes:
     """
     Derive a 256-bit (32 byte) AES auth key by hashing/salting
     the vault key with the master password.
     Performs 100,000 iterations using PBKDF2 HMAC SHA256.
     """
-    return hashlib.pbkdf2_hmac(
-        'sha256',
-        _to_bytes(vault_key),
-        _to_bytes(master_password),
-        100000,
-        32
-    )
+    return hashlib.pbkdf2_hmac('sha256', _to_bytes(vault_key), _to_bytes(master_password), 100000, 32)
 
 
-def is_auth_key_match(
-    stored_auth_key: str | bytes,
-    derived_auth_key: str | bytes
-) -> bool:
+def is_auth_key_match(stored_auth_key: str | bytes, derived_auth_key: str | bytes) -> bool:
     """Compare stored and derived auth keys"""
-    if isinstance(stored_auth_key, str):
-        stored_auth_key = bytes.fromhex(stored_auth_key)
-
-    if isinstance(derived_auth_key, str):
-        derived_auth_key = bytes.fromhex(derived_auth_key)
+    stored_auth_key = bytes.fromhex(stored_auth_key) if isinstance(stored_auth_key, str) else stored_auth_key
+    derived_auth_key = bytes.fromhex(derived_auth_key) if isinstance(derived_auth_key, str) else derived_auth_key
 
     return hmac.compare_digest(stored_auth_key, derived_auth_key)

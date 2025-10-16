@@ -58,10 +58,7 @@ class LogoutTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data,
-            {"detail": "Token is blacklisted", "code": "token_not_valid"}
-        )
+        self.assertEqual(response.data, {"detail": "Token is blacklisted", "code": "token_not_valid"})
 
     def test_logout_invalid_token(self):
         url = reverse('logout')
@@ -70,10 +67,7 @@ class LogoutTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data,
-            {"detail": "Token is invalid", "code": "token_not_valid"}
-        )
+        self.assertEqual(response.data, {"detail": "Token is invalid", "code": "token_not_valid"})
 
     def test_logout_blacklisted_token(self):
         url = reverse('logout')
@@ -89,7 +83,4 @@ class LogoutTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data,
-            {"detail": "Token is blacklisted", "code": "token_not_valid"}
-        )
+        self.assertEqual(response.data, {"detail": "Token is blacklisted", "code": "token_not_valid"})

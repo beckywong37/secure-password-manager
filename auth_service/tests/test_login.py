@@ -66,10 +66,7 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"non_field_errors": ["User does not exist"]}
-        )
+        self.assertEqual(response.data, {"non_field_errors": ["User does not exist"]})
 
     def test_login_missing_username(self):
         """
@@ -84,10 +81,7 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"username": ["This field is required."]}
-        )
+        self.assertEqual(response.data, {"username": ["This field is required."]})
 
     def test_login_missing_password(self):
         """
@@ -102,7 +96,4 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"password": ["This field is required."]}
-        )
+        self.assertEqual(response.data, {"password": ["This field is required."]})

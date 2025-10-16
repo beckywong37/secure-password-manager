@@ -67,10 +67,7 @@ class TokenTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data,
-            {"detail": "Token is invalid", "code": "token_not_valid"}
-        )
+        self.assertEqual(response.data, {"detail": "Token is invalid", "code": "token_not_valid"})
 
     def test_logout_refresh_token_blacklisted_token(self):
         # Use refresh token to logout (blacklists token)
@@ -88,7 +85,4 @@ class TokenTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(
-            response.data,
-            {"detail": "Token is blacklisted", "code": "token_not_valid"}
-        )
+        self.assertEqual(response.data, {"detail": "Token is blacklisted", "code": "token_not_valid"})

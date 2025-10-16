@@ -72,10 +72,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"username": ["A user with that username already exists."]}
-        )
+        self.assertEqual(response.data, {"username": ["A user with that username already exists."]})
 
     def test_register_mismatched_passwords(self):
         """
@@ -96,10 +93,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"password": ["Password fields didn't match."]}
-        )
+        self.assertEqual(response.data, {"password": ["Password fields didn't match."]})
 
     def test_register_missing_username(self):
         """
@@ -117,10 +111,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"username": ["This field is required."]}
-        )
+        self.assertEqual(response.data, {"username": ["This field is required."]})
 
     def test_register_missing_email(self):
         """
@@ -155,10 +146,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"password": ["This field is required."]}
-        )
+        self.assertEqual(response.data, {"password": ["This field is required."]})
 
     def test_register_missing_password2(self):
         """
@@ -176,10 +164,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"password2": ["This field is required."]}
-        )
+        self.assertEqual(response.data, {"password2": ["This field is required."]})
 
     def test_register_invalid_email(self):
         """
@@ -198,7 +183,4 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(
-            response.data,
-            {"email": ["Enter a valid email address."]}
-        )
+        self.assertEqual(response.data, {"email": ["Enter a valid email address."]})

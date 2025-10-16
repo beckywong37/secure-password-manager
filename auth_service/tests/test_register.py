@@ -4,7 +4,8 @@ Auth Service Login Tests
 This module provides tests for auth service register endpoint.
 
 References:
-    - Django REST framework testing documentation: https://www.django-rest-framework.org/api-guide/testing/
+    - Django REST framework testing documentation:
+    https://www.django-rest-framework.org/api-guide/testing/
 """
 
 from django.urls import reverse
@@ -71,11 +72,15 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"username": ["A user with that username already exists."]})
+        self.assertEqual(
+            response.data,
+            {"username": ["A user with that username already exists."]}
+        )
 
     def test_register_mismatched_passwords(self):
         """
-        Ensure we get an error when attempting to register with mismatching passwords
+        Ensure we get an error when attempting to register
+        with mismatching passwords
         """
         self.username = 'bcurley2'
         self.email = 'curleyr@oregonstate.edu'
@@ -91,11 +96,15 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password": ["Password fields didn't match."]})
+        self.assertEqual(
+            response.data,
+            {"password": ["Password fields didn't match."]}
+        )
 
     def test_register_missing_username(self):
         """
-        Ensure we get an error when attempting to register with a missing username
+        Ensure we get an error when attempting to register
+        with a missing username
         """
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
@@ -108,7 +117,10 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"username": ["This field is required."]})
+        self.assertEqual(
+            response.data,
+            {"username": ["This field is required."]}
+        )
 
     def test_register_missing_email(self):
         """
@@ -129,7 +141,8 @@ class RegisterTests(APITestCase):
 
     def test_register_missing_password(self):
         """
-        Ensure we get an error when attempting to register with a missing password
+        Ensure we get an error when attempting to register
+        with a missing password
         """
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
@@ -142,11 +155,15 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password": ["This field is required."]})
+        self.assertEqual(
+            response.data,
+            {"password": ["This field is required."]}
+        )
 
     def test_register_missing_password2(self):
         """
-        Ensure we get an error when attempting to register with a missing password2 (password re-entry)
+        Ensure we get an error when attempting to register with
+        a missing password2 (password re-entry)
         """
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
@@ -159,7 +176,10 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password2": ["This field is required."]})
+        self.assertEqual(
+            response.data,
+            {"password2": ["This field is required."]}
+        )
 
     def test_register_invalid_email(self):
         """
@@ -178,4 +198,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"email": ["Enter a valid email address."]})
+        self.assertEqual(
+            response.data,
+            {"email": ["Enter a valid email address."]}
+        )

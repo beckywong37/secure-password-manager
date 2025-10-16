@@ -5,7 +5,12 @@ This module provides tests for auth service utils.
 """
 
 from django.test import TestCase
-from auth_service.utils import _to_bytes, derive_vault_key, derive_auth_key, is_auth_key_match
+from auth_service.utils import (
+    _to_bytes,
+    derive_vault_key,
+    derive_auth_key,
+    is_auth_key_match
+)
 
 
 class UtilsTests(TestCase):
@@ -130,7 +135,7 @@ class UtilsTests(TestCase):
 
         self.assertTrue(is_auth_key_match(auth_key_1, auth_key_2))
 
-    def test_is_auth_key_match_returns_true_on_match(self):
+    def test_is_auth_key_match_returns_false_on_mismatch(self):
         """Ensure auth key mismatches returns false"""
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
@@ -145,7 +150,10 @@ class UtilsTests(TestCase):
         self.assertFalse(is_auth_key_match(auth_key_1, auth_key_2))
 
     def test_is_auth_key_match_handles_mismatches_input_types(self):
-        """Ensure auth key matching check handles mismatches string and bytes inputs"""
+        """
+        Ensure auth key matching check handles
+        mismatched string and bytes inputs
+        """
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 

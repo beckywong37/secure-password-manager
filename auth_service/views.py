@@ -1,12 +1,15 @@
 """
 Auth Service Views
 
-This module provides API views for user registration and login, 
+This module provides API views for user registration and login,
 handling JWT token issance and refresh.
 
 References:
-    - Django REST framework documentation: https://www.django-rest-framework.org
-    - Django REST framework Simple JTW documentation: https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
+    - Django REST framework documentation:
+    https://www.django-rest-framework.org
+
+    - Django REST framework Simple JTW documentation:
+    https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
 """
 
 from rest_framework import status, generics
@@ -25,7 +28,7 @@ class RegisterView(generics.CreateAPIView):
     create a new User model instance using RegisterSerializer.
 
     Permissions:
-        - AllowAny: Anyone can call the register endpoint without authentication
+        - AllowAny: Anyone can call the endpoint without authtication
     """
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -36,11 +39,11 @@ class LoginView(generics.CreateAPIView):
     API endpoint for authenticating an existing user.
 
     Inherits from DRF's CreateAPIView for POST method handling to
-    authenticate an existing user using LoginSerializer and returns 
+    authenticate an existing user using LoginSerializer and returns
     JWT access and refresh tokens.
 
     Permissions:
-        - AllowAny: Anyone can call the login endpoint without authentication
+        - AllowAny: Anyone can call the endpoint without authentication
     """
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]

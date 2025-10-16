@@ -4,13 +4,13 @@ Auth Service Login Tests
 This module provides tests for auth service login endpoint.
 
 References:
-    - Django REST framework testing documentation: https://www.django-rest-framework.org/api-guide/testing/
+    - Django REST framework testing documentation:
+    https://www.django-rest-framework.org/api-guide/testing/
 """
 
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from auth_service.models import User
 
 
 class LoginTests(APITestCase):
@@ -53,7 +53,8 @@ class LoginTests(APITestCase):
 
     def test_login_non_user(self):
         """
-        Ensure we get an error when attempting to authenticate a non-existent user
+        Ensure we get an error when attempting to
+        authenticate a non-existent user
         """
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
@@ -65,11 +66,15 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"non_field_errors": ["User does not exist"]})
+        self.assertEqual(
+            response.data,
+            {"non_field_errors": ["User does not exist"]}
+        )
 
     def test_login_missing_username(self):
         """
-        Ensure we get an error when attempting to authenticate with a missing username
+        Ensure we get an error when attempting to
+        authenticate with a missing username
         """
         self.password = 'ThisIsMyStrongPassword123'
 
@@ -79,11 +84,15 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"username": ["This field is required."]})
+        self.assertEqual(
+            response.data,
+            {"username": ["This field is required."]}
+        )
 
     def test_login_missing_password(self):
         """
-        Ensure we get an error when attempting to authenticate with a missing password
+        Ensure we get an error when attempting to
+        authenticate with a missing password
         """
         self.password = 'ThisIsMyStrongPassword123'
 
@@ -93,4 +102,7 @@ class LoginTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password": ["This field is required."]})
+        self.assertEqual(
+            response.data,
+            {"password": ["This field is required."]}
+        )

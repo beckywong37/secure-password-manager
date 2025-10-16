@@ -1,12 +1,15 @@
 """
 Auth Service Serializers
 
-This module provides serializers for user registration and login, 
+This module provides serializers for user registration and login,
 handling vault key and auth key derivation for secure authentication.
 
 References:
-    - Django REST framework serializers documentation: https://www.django-rest-framework.org/api-guide/serializers/
-    - Django authentication documentation: https://docs.djangoproject.com/en/5.2/topics/auth/customizing/#django.contrib.auth
+    - Django REST framework serializers documentation:
+    https://www.django-rest-framework.org/api-guide/serializers/
+
+    - Django authentication documentation:
+    https://docs.djangoproject.com/en/5.2/topics/auth/customizing/#django.contrib.auth
 """
 
 from typing import Any, Dict
@@ -14,7 +17,11 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import AbstractUser
-from auth_service.utils import derive_vault_key, derive_auth_key, is_auth_key_match
+from auth_service.utils import (
+    derive_vault_key,
+    derive_auth_key,
+    is_auth_key_match
+)
 
 
 User = get_user_model()
@@ -25,12 +32,16 @@ class RegisterSerializer(serializers.ModelSerializer):
     Serializer for registering a new user
 
     Handles:
-        - Validating passwords
-        - Deriving vault/auth keys
-        - Creating and returning a new User instance
+        - Validate passwords
+        - Derive vault/auth keys
+        - Create and returning a new User instance
     """
     email = serializers.EmailField(required=True)
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )
     password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
@@ -42,10 +53,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         Ensure both password fields match
 
         Raises:
-            - serializers.ValidationError: If the two password fields don't match
+            - serializers.ValidationError: Password fields don't match
         """
         if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+            raise serializers.ValidationError({
+                "password": "Password fields didn't match."
+            })
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> AbstractUser:
@@ -53,9 +66,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         Create and save a new user with a derived auth key
 
         Handles:
-            - Extracting credentials from validated_data
-            - Deriving determinstic 256 bit AES auth and vault keys using PBKDF2
-            - Creating a new User instance with the derived auth key
+            - Extract credentials from validated_data
+            - Derive determinstic 256 bit AES auth and vault keys using PBKDF2
+            - Create a new User instance with the derived auth key
 
         Receives:
             - validated_data (dict): Validated registration data

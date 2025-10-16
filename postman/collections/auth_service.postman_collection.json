@@ -1,0 +1,134 @@
+{
+	"info": {
+		"_postman_id": "fe62823d-c8b6-4734-9e6a-61614d50bcf0",
+		"name": "auth_service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38972424"
+	},
+	"item": [
+		{
+			"name": "/auth/register/",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"bcurley\",\n    \"email\": \"curley@oregonstate.edu\",\n    \"password\": \"ThisIsMyStrongPassword123\",\n    \"password2\": \"ThisIsMyStrongPassword123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/register/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"register",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/auth/login/",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"username\": \"bcurley\",\n  \"password\": \"ThisIsMyStrongPassword123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/login/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "auth/token/",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDYzMzk3NCwiaWF0IjoxNzYwNTQ3NTc0LCJqdGkiOiJmNWNmYjYzOWMzMDQ0YTY0YWJiM2NkMjg5ODFmNDQ4MCIsInVzZXJfaWQiOiIxIn0.sTohRZ1VX675QzFhMyoVEXBuOjExMwgAzT4c97vQgR0\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/token/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"token",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/auth/logout/",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDYzMzk4NCwiaWF0IjoxNzYwNTQ3NTg0LCJqdGkiOiJiNzhjMzZmZWQ1OTc0ZmE1ODQyY2I2NjI1NTkzNjAyZSIsInVzZXJfaWQiOiIxIn0.KI_75QBylBCcLpVRRq5GtWEUg2n18BmKfhq5rw3x3CY\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/auth/logout/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"auth",
+						"logout",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

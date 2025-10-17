@@ -1,0 +1,6 @@
+[flake8]
+exclude = 
+    __pycache__,
+    */migrations/*,
+    *settings*,
+max-line-length = 127

@@ -21,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-2l#!@)m89#y6lg-u@4ef*7e&*oe4xg0z4vh2n1g&w%$h87g7+s"
+SECRET_KEY = (
+    "django-insecure-2l#!@)m89#y6lg-u@4ef*7e&*oe4xg0z4vh2n1g&w%$h87g7+s"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["secure-password-manager-475618.uc.r.appspot.com"]
 
 
 # Application definition
@@ -42,22 +44,22 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "hello",
-    "auth_service"
+    "auth_service",
 ]
 
 # DRF configuration
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
 # DRF Simple JWT configuration
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 MIDDLEWARE = [
@@ -108,9 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
     },
@@ -143,4 +143,4 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User model for authentication from auth app
-AUTH_USER_MODEL = 'auth_service.User'
+AUTH_USER_MODEL = "auth_service.User"

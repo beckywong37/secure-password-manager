@@ -11,6 +11,8 @@ Features:
 References:
 - NIST Password Guidelines: https://sprinto.com/blog/nist-password-guidelines/
 - Secrets Module: https://docs.python.org/3/library/secrets.html
+- 100k Most Common Passwords: 
+    - https://github.com/danielmiessler/SecLists/tree/master/Passwords
 """
 
 import secrets
@@ -20,8 +22,8 @@ def generate_password(length=15, uppercase=False, lowercase=False, numbers=False
         """Generate a secure password based on user defined criteria.
         Default length is 15 characters per NIST guidelines"""
         # Enforce min length to 8 characters per NIST guidelines
-        if length <= 8:
-            length = 8
+        # if length <= 8:
+        #     length = 8
         
         password = []
         pool = ''
@@ -54,3 +56,73 @@ def generate_password(length=15, uppercase=False, lowercase=False, numbers=False
             password = 'Check at least one option!'
 
         return password
+
+
+def password_strength(password):
+    """Calculates the strength of a password based on ..."""
+    score = 0 # out of 10
+    strength = None # Weak, Moderate, Strong
+    notes = []
+    length = len(password)
+    contains_upper, contains_lower = False, False
+    contains_number, contains_special = False, False
+
+    for c in password:
+        if c in string.ascii_uppercase:
+            contains_upper = True
+        elif c in string.ascii_lowercase:
+            contains_lower = True
+        elif c in string.digits:
+            contains_number = True
+        elif c in string.punctuation:
+            contains_special = True
+    
+    # Scoring system for length and character types
+    if length >= 8:
+        score += 1
+    else:
+        notes.append("Password length is less than 8 characters.")
+    if length >= 15:
+        score += 1
+    else:
+        notes.append("NISC recommends 15 characters to increase password strength.")
+    if contains_upper:
+        score += 1
+    else:
+        notes.append("Password does not contain uppercase letters.")
+    if contains_lower:
+        score += 1
+    else:
+        notes.append("Password does not contain lowercase letters.")
+    if contains_number:
+        score += 1
+    else:
+        notes.append("Password does not contain numbers.")
+    if contains_special:
+        score += 1
+    else:
+        notes.append("Password does not contain special characters.")
+
+    # Check uniquess against common passwords list
+    with open("generator/misc/100k-most-used-passwords-NCSC.txt", "r") as f:
+        common_passwords = f.read().splitlines()
+        if password in common_passwords:
+            notes.append("Password is found in common passwords list.")
+        else:
+            score += 4
+    
+    # Total score
+    if score == 10:
+        strength = "Strong"
+    elif 7 <= score < 10:
+        strength = "Moderate"
+    else:
+        strength = "Weak"
+    
+    data = {
+        "score": score,
+        "strength": strength,
+        "notes": notes
+    }
+
+    return data

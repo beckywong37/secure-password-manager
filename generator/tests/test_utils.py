@@ -74,3 +74,17 @@ class PasswordStrengthTest(TestCase):
         self.assertIn("Password does not contain numbers.", data['notes'])
         self.assertIn("Password does not contain special characters.", data['notes'])
 
+    def test_common_password(self):
+        """Tests a common password"""
+        password = "password1"
+        data = password_strength(password)
+        self.assertEqual(data['strength'], "Weak")
+        self.assertTrue(data['score'], 4)
+        self.assertIn("Password is found in common passwords list.", data['notes'])
+
+    def test_no_password(self):
+        """Tests an empty password"""
+        password = ""
+        data = password_strength(password)
+        self.assertEqual("No password provided.", data)
+

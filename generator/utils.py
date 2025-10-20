@@ -60,6 +60,9 @@ def generate_password(length=15, uppercase=False, lowercase=False, numbers=False
 
 def password_strength(password):
     """Calculates the strength of a password based on ..."""
+    if not password:
+        return "No password provided."
+    
     score = 0 # out of 10
     strength = None # Weak, Moderate, Strong
     notes = []

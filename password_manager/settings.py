@@ -28,7 +28,11 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["secure-password-manager-475618.uc.r.appspot.com"]
+ALLOWED_HOSTS = [
+    "secure-password-manager-475618.uc.r.appspot.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 
 # Application definition

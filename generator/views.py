@@ -18,13 +18,13 @@ from django.views import View
 
 class PasswordGeneratorHTMLView(View):
     """Renders HTML form with password generated"""
+    
     def get(self, request):
         """Loads page"""
         return render(request, 'generator/generator.html')
 
     def post(self, request):
         """Generates secure password based on user criteria and handles form submission.
-        
         Returns: Generated password to HTML template"""
         # Save user selections in variables
         length = int(request.POST.get('length', 15))

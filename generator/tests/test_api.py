@@ -33,7 +33,6 @@ class APITests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('password', response.data)
-        # Check length of password
         self.assertEqual(len(response.data['password']), 20)
 
 
@@ -42,10 +41,8 @@ class APITests(TestCase):
         Default length is 15, everything else set to False"""
         url = reverse('password_generator_api')
         data = {}
-        response = self.client.post(url, {}, format='json')
+        response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('password', response.data)
-
-        # Check for error message since user did not select any options
         self.assertEqual(response.data['password'], 'Check at least one option!')

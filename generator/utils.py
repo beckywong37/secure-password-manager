@@ -1,12 +1,23 @@
 """
-Logic for generating secure password based on user defined critiera.
+Password Generator: Generates secure password based on user defined critiera.
 
-Features:
-- Enforces NIST guidelines for min password length of 8 characters
-- Defaults password length to 15 characters if length not specified (NIST recommended)
+Features of Password Generator:
+- User selections includes uppercase, lowercase, numbers, and/or special characters
+- Default password length is 15 characters if length not specified by user (NIST recommended)
 - Ensures at least one character type is included in password IF selected
 - Uses secrets module for a password that is more cryptographically secure
-- Shuffle the password to for additional unpredicability with secrets SystemRandom shuffle
+- Shuffles the password for additional unpredicability with secrets SystemRandom shuffle
+
+Password Strength Calculator: Calculates strength of password based on length, character types,
+and uniqueness against a common passwords list.
+
+Features of Password Strength Calculator:
+- Scores password out of 10 based on length
+- Scoring system:
+    - Length: 1 point for 8+ characters, additional 1 point for 15+ characters
+    - Character Types: 1 point each for uppercase, lowercase, numbers, special characters
+    - Uniqueness: 4 points if not found in common passwords list. 
+- Provides notes on how to improve password strength
 
 References:
 - NIST Password Guidelines: https://sprinto.com/blog/nist-password-guidelines/
@@ -21,10 +32,6 @@ import string
 def generate_password(length=15, uppercase=False, lowercase=False, numbers=False, special=False):
         """Generate a secure password based on user defined criteria.
         Default length is 15 characters per NIST guidelines"""
-        # Enforce min length to 8 characters per NIST guidelines
-        # if length <= 8:
-        #     length = 8
-        
         password = []
         pool = ''
 
@@ -59,7 +66,9 @@ def generate_password(length=15, uppercase=False, lowercase=False, numbers=False
 
 
 def password_strength(password):
-    """Calculates the strength of a password based on ..."""
+    """Calculates the strength of a password based on length, character types,
+    and uniqueness against a common passwords list.
+    Returns: Score, strength, and notes on how to improve password strength in dictionary format"""
     if not password:
         return "No password provided."
     

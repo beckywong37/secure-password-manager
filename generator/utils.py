@@ -16,53 +16,58 @@ Features of Password Strength Calculator:
 - Scoring system:
     - Length: 1 point for 8+ characters, additional 1 point for 15+ characters
     - Character Types: 1 point each for uppercase, lowercase, numbers, special characters
-    - Uniqueness: 4 points if not found in common passwords list. 
+    - Uniqueness: 4 points if not found in common passwords list.
 - Provides notes on how to improve password strength
 
 References:
 - NIST Password Guidelines: https://sprinto.com/blog/nist-password-guidelines/
 - Secrets Module: https://docs.python.org/3/library/secrets.html
-- 100k Most Common Passwords: 
+- 100k Most Common Passwords:
     - https://github.com/danielmiessler/SecLists/tree/master/Passwords
 """
 
 import secrets
 import string
+from django.conf import settings
+import os
+from generator.misc.common_passwords import COMMON_PASSWORDS
+SPECIAL_CHAR = set('!@#$%^&*()-_=+[]{}|;:,.<>?/~')
+
 
 def generate_password(length=15, uppercase=False, lowercase=False, numbers=False, special=False):
-        """Generate a secure password based on user defined criteria.
-        Default length is 15 characters per NIST guidelines"""
-        password = []
-        pool = ''
+    """Generate a secure password based on user defined criteria.
+    Default length is 15 characters per NIST guidelines"""
+    password = []
+    pool = ''
 
-        # Ensure add least one character type is included in password if selected
-        # Create pool of characters to choose from
-        if uppercase == True:
-            password.append(secrets.choice(string.ascii_uppercase))
-            pool += string.ascii_uppercase
-        if lowercase == True:
-            password.append(secrets.choice(string.ascii_lowercase))
-            pool += string.ascii_lowercase
-        if numbers == True:
-            password.append(secrets.choice(string.digits))
-            pool += string.digits
-        if special == True:
-            password.append(secrets.choice(string.punctuation))
-            pool += string.punctuation
+    # Ensure add least one character type is included in password if selected
+    # Create pool of characters to choose from
+    if uppercase is True:
+        password.append(secrets.choice(string.ascii_uppercase))
+        pool += string.ascii_uppercase
+    if lowercase is True:
+        password.append(secrets.choice(string.ascii_lowercase))
+        pool += string.ascii_lowercase
+    if numbers is True:
+        password.append(secrets.choice(string.digits))
+        pool += string.digits
+    if special is True:
+        password.append(secrets.choice(string.punctuation))
+        pool += string.punctuation
 
-        # Check pool is not empty
-        if len(pool) != 0:
-            length_left = length - len(password)
-            # Generate remaining password using secrets
-            for _ in range(length_left):
-                password.append(secrets.choice(pool))
-            # Shuffle password to ensure randomness
-            secrets.SystemRandom().shuffle(password)
-            password = ''.join(password)
-        else:
-            password = 'Check at least one option!'
+    # Check pool is not empty
+    if len(pool) != 0:
+        length_left = length - len(password)
+        # Generate remaining password using secrets
+        for _ in range(length_left):
+            password.append(secrets.choice(pool))
+        # Shuffle password to ensure randomness
+        secrets.SystemRandom().shuffle(password)
+        password = ''.join(password)
+    else:
+        password = 'Check at least one option!'
 
-        return password
+    return password
 
 
 def password_strength(password):
@@ -71,9 +76,8 @@ def password_strength(password):
     Returns: Score, strength, and notes on how to improve password strength in dictionary format"""
     if not password:
         return "No password provided."
-    
-    score = 0 # out of 10
-    strength = None # Weak, Moderate, Strong
+    score = 0
+    strength = None
     notes = []
     length = len(password)
     contains_upper, contains_lower = False, False
@@ -88,7 +92,7 @@ def password_strength(password):
             contains_number = True
         elif c in string.punctuation:
             contains_special = True
-    
+
     # Scoring system for length and character types
     if length >= 8:
         score += 1
@@ -97,7 +101,7 @@ def password_strength(password):
     if length >= 15:
         score += 1
     else:
-        notes.append("NISC recommends 15 characters to increase password strength.")
+        notes.append("NIST recommends 15 characters to increase password strength.")
     if contains_upper:
         score += 1
     else:
@@ -116,13 +120,16 @@ def password_strength(password):
         notes.append("Password does not contain special characters.")
 
     # Check uniquess against common passwords list
-    with open("generator/misc/100k-most-used-passwords-NCSC.txt", "r") as f:
-        common_passwords = f.read().splitlines()
-        if password in common_passwords:
-            notes.append("Password is found in common passwords list.")
-        else:
-            score += 4
-    
+    file = os.path.join(settings.BASE_DIR, 'generator', 'misc', '100k-most-used-passwords-NCSC.txt')
+
+    if not os.path.exists(file):
+        raise FileNotFoundError(f"Common passwords file not found at: {file}")
+
+    if password in COMMON_PASSWORDS:
+        notes.append("Password is found in common passwords list.")
+    else:
+        score += 4
+
     # Total score
     if score == 10:
         strength = "Strong"
@@ -130,7 +137,7 @@ def password_strength(password):
         strength = "Moderate"
     else:
         strength = "Weak"
-    
+
     data = {
         "score": score,
         "strength": strength,

@@ -13,6 +13,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from django.urls import reverse
 
+
 class APITests(TestCase):
     def setUp(self):
         """Runs before each test to set up API client"""
@@ -34,7 +35,6 @@ class APITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('password', response.data)
         self.assertEqual(len(response.data['password']), 20)
-
 
     def test_default_options_api(self):
         """Tests password generation via API call with default options.

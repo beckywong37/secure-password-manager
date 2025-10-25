@@ -1,7 +1,7 @@
 """
 Password Generator Views
 
-This module calls utils.py to create a 
+This module calls utils.py to create a
 secure password based on criteria defined by the user.
 
 It can be generated for HTML form submission or as a REST API endpoint.
@@ -16,9 +16,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.views import View
 
+
 class PasswordGeneratorHTMLView(View):
     """Renders HTML form with password generated"""
-    
+
     def get(self, request):
         """Loads page"""
         return render(request, 'generator/generator.html')
@@ -27,7 +28,14 @@ class PasswordGeneratorHTMLView(View):
         """Generates secure password based on user criteria and handles form submission.
         Returns: Generated password to HTML template"""
         # Save user selections in variables
-        length = int(request.POST.get('length', 15))
+        try:
+            length = int(request.POST.get('length', 15))
+            if length < 4 or length > 128:
+                raise ValueError("Length must be between 4 and 128")
+        except (ValueError, TypeError):
+            return render(request, 'generator/generator.html', {
+                'error': 'Invalid password length. Enter a number between 4 and 128.'
+            })
         uppercase = "uppercase" in request.POST
         lowercase = "lowercase" in request.POST
         numbers = "numbers" in request.POST
@@ -46,12 +54,12 @@ class PasswordGeneratorHTMLView(View):
 
         return render(request, 'generator/generator.html', data)
 
+
 class PasswordGeneratorAPIView(APIView):
     """REST API endpoint for generating secure passsword based on user input"""
-    
+
     def post(self, request):
         """REST API endpoint for generating secure password
-        
         Returns: Generated password or error message in JSON format"""
         # Get user selection for password, defaults set if not provided
         length = int(request.data.get('length', 15))
@@ -67,3 +75,14 @@ class PasswordGeneratorAPIView(APIView):
 
         # Return password in JSON format
         return Response({'password': password})
+
+
+class PasswordStrengthHTMLView(View):
+    """Renders HTML form with password strength analysis"""
+
+    def get(self, request):
+        """Loads page"""
+        return render(request, 'generator/strength.html')
+
+    def post(self, request):
+        """Scores password strength """

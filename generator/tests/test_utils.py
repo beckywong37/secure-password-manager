@@ -10,7 +10,8 @@ To run test locally: python manage.py test generator.tests
 """
 
 from django.test import TestCase
-from generator.utils import generate_password, password_strength
+from generator.utils import generate_password, password_strength, SPECIAL_CHAR
+
 
 class PasswordGeneratorTest(TestCase):
     def test_only_characters(self):
@@ -34,12 +35,11 @@ class PasswordGeneratorTest(TestCase):
         """
         password = generate_password(length=7, uppercase=True)
         self.assertEqual(len(password), 7)
-    
+
     def test_includes_symbols(self):
         """Generates password including special characters"""
-        special_char = set('!@#$%^&*()-_=+[]{}|;:,.<>?/~`')
         password = generate_password(length=17, special=True)
-        self.assertTrue(any(character in special_char for character in password))
+        self.assertTrue(any(character in SPECIAL_CHAR for character in password))
         self.assertEqual(len(password), 17)
 
 
@@ -51,14 +51,14 @@ class PasswordStrengthTest(TestCase):
         self.assertEqual(data['notes'], [])
         self.assertEqual(data['strength'], "Strong")
         self.assertEqual(data['score'], 10)
-    
+
     def test_moderate_password(self):
         """Tests a moderate password"""
         password = generate_password(8, True, True, False, False)
         data = password_strength(password)
         self.assertEqual(data['strength'], "Moderate")
-        self.assertTrue(data['score'], 7)
-        self.assertIn("NISC recommends 15 characters to increase password strength.", data['notes'])
+        self.assertEqual(data['score'], 7)
+        self.assertIn("NIST recommends 15 characters to increase password strength.", data['notes'])
         self.assertIn("Password does not contain numbers.", data['notes'])
         self.assertIn("Password does not contain special characters.", data['notes'])
 
@@ -67,9 +67,9 @@ class PasswordStrengthTest(TestCase):
         password = generate_password(6, False, True, False, False)
         data = password_strength(password)
         self.assertEqual(data['strength'], "Weak")
-        self.assertTrue(data['score'], 5)
+        self.assertEqual(data['score'], 5)
         self.assertIn("Password length is less than 8 characters.", data['notes'])
-        self.assertIn("NISC recommends 15 characters to increase password strength.", data['notes'])
+        self.assertIn("NIST recommends 15 characters to increase password strength.", data['notes'])
         self.assertIn("Password does not contain uppercase letters.", data['notes'])
         self.assertIn("Password does not contain numbers.", data['notes'])
         self.assertIn("Password does not contain special characters.", data['notes'])
@@ -79,7 +79,7 @@ class PasswordStrengthTest(TestCase):
         password = "password1"
         data = password_strength(password)
         self.assertEqual(data['strength'], "Weak")
-        self.assertTrue(data['score'], 4)
+        self.assertEqual(data['score'], 3)
         self.assertIn("Password is found in common passwords list.", data['notes'])
 
     def test_no_password(self):
@@ -87,4 +87,3 @@ class PasswordStrengthTest(TestCase):
         password = ""
         data = password_strength(password)
         self.assertEqual("No password provided.", data)
-

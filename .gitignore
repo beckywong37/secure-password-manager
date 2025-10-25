@@ -206,6 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Ignore templates folder inside generator (for now)
+#TODO: Remove this once templates are complete for Sprint 2
 generator/templates/
 

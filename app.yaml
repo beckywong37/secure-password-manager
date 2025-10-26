@@ -1,8 +1,14 @@
 runtime: python311
 
 env_variables:
-  # This setting is used in settings.py to configure your ALLOWED_HOSTS
+  # This setting is used in settings.py to configure ALLOWED_HOSTS
   APPENGINE_URL: https://secure-password-manager-475618.uc.r.appspot.com/
+  DB_NAME: appdb
+  DB_USER: appuser
+  # DB_PASSWORD intentionally omitted (fetched from Secret Manager)
+  INSTANCE_CONNECTION_NAME: secure-password-manager-475618:us-central1:secure-password-manager-instance
+  DEBUG: False
+  USE_CLOUD_SQL: True
 
 handlers:
 # This configures Google App Engine to serve the files in the app's static

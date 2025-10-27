@@ -120,7 +120,7 @@ def password_strength(password):
         notes.append("Password does not contain special characters.")
 
     # Check uniquess against common passwords list
-    file = os.path.join(settings.BASE_DIR, 'generator', 'misc', '100k-most-used-passwords-NCSC.txt')
+    file = os.path.join(settings.BASE_DIR, 'generator', 'misc', 'common_passwords.py')
 
     if not os.path.exists(file):
         raise FileNotFoundError(f"Common passwords file not found at: {file}")

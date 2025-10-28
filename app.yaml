@@ -21,3 +21,9 @@ handlers:
 # the entire handlers section) when there are no static files defined.
 - url: /.*
   script: auto
+
+automatic_scaling:
+  max_instances: 1
+  min_instances: 0
+  target_cpu_utilization: 0.65
+  max_concurrent_requests: 80

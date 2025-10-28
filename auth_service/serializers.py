@@ -88,6 +88,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return user
 
+    def to_representation(self, instance: AbstractUser) -> Dict[str, Any]:
+        """
+        Control what's returned when the user object is serialized.
+
+        Returns:
+            - dict: Serialized representation of the created user.
+        """
+        return {
+            "username": instance.username,
+            "email": instance.email,
+            "message": "Registration successful. Proceed to MFA setup."
+        }
+
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -115,10 +128,9 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         master_password = attrs.get('password')
 
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise serializers.ValidationError('User does not exist')
+        user = User.objects.filter(username=username).first()
+        if not user:
+            raise serializers.ValidationError('Invalid username or password')
 
         # Derive the auth key and compared with the stored auth key
         vault_key = derive_vault_key(user.email, master_password)
@@ -130,3 +142,17 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user
 
         return attrs
+
+    def to_representation(self, instance: AbstractUser) -> Dict[str, Any]:
+        """
+        Control what's returned when the user object is serialized.
+
+        Returns:
+            - dict: Serialized representation of the authenticated user.
+        """
+        user = instance.get('user', None) if isinstance(instance, dict) else instance
+        return {
+            "username": user.username,
+            "email": user.email,
+            "user_id": user.id
+        }

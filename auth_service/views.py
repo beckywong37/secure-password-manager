@@ -17,6 +17,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
+from django.views.generic import TemplateView
 from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
 from auth_service.utils.mfa import create_signed_token
@@ -25,6 +26,7 @@ from auth_service.utils.mfa import create_signed_token
 User = get_user_model()
 
 
+# API Views
 class RegisterView(generics.CreateAPIView):
     """
     API endpoint for registering a new user.
@@ -250,3 +252,27 @@ class MFAVerifyView(generics.CreateAPIView):
         # Successful validation
         jwt_tokens = serializer.save()
         return Response(jwt_tokens, status=status.HTTP_200_OK)
+
+
+# Template Views
+# TODO:
+# Similar to comment in urls.py. These are to support the current auth_service templates that were created primarily
+# for local testing. Once the frontend integration is complete, these can be removed.
+class RegisterPageView(TemplateView):
+    """Render registration page for local UI testing."""
+    template_name = 'auth_service/register.html'
+
+
+class LoginPageView(TemplateView):
+    """Render login page for local UI testing."""
+    template_name = 'auth_service/login.html'
+
+
+class MFASetupPageView(TemplateView):
+    """Render MFA setup page for local UI testing."""
+    template_name = 'auth_service/mfa_setup.html'
+
+
+class MFAVerifyPageView(TemplateView):
+    """Render MFA verification page for local UI testing."""
+    template_name = 'auth_service/mfa_verify.html'

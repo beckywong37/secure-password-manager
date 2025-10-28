@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFA Setup</title>
+  </head>
+  <body>
+    <h1>MFA Setup</h1>
+    <p>Scan the QR code below in Google Authenticator or your favorite authentication app.</p>
+    <div id="qrContainer"></div>
+    <div id="message"></div>
+
+    <form action="{% url 'auth_service:mfa-verify-page' %}" method="get">
+      <button id="mfaSetupBtn">Continue to verification page</button>
+    </form>
+  
+    <script>
+      async function getQRCode() {
+        const response = await fetch("{% url 'auth_service:mfa-setup-api' %}", {
+          method: "GET"
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          console.error("error: ", data);
+          document.getElementById("message").text = "Error retrieving QR code to complete MFA setup.";
+          return;
+        }
+
+        const img = document.createElement("img");
+        img.src = data.qr_code;
+        img.alt = "MFA QR Code";
+        document.getElementById("qrContainer").appendChild(img);
+      }
+      getQRCode();
+    </script>
+  </body>
+</html>

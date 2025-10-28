@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "hello",
     "auth_service",
+    "generator",
 ]
 
 # DRF configuration

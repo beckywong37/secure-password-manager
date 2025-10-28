@@ -25,7 +25,6 @@ import qrcode
 import io
 import base64
 
-
 User = get_user_model()
 
 

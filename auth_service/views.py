@@ -11,6 +11,7 @@ References:
     - Django REST framework Simple JTW documentation:
     https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
 """
+
 from rest_framework import serializers
 from rest_framework import status, generics
 from rest_framework.request import Request
@@ -21,7 +22,6 @@ from django.views.generic import TemplateView
 from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
 from auth_service.utils.mfa import create_signed_token
-
 
 User = get_user_model()
 

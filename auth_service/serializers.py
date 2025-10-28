@@ -17,7 +17,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import AbstractUser
-from auth_service.utils import derive_vault_key, derive_auth_key, is_auth_key_match
+from auth_service.utils.hashing import derive_vault_key, derive_auth_key, is_auth_key_match
 
 
 User = get_user_model()

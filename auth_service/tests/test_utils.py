@@ -5,7 +5,7 @@ This module provides tests for auth service utils.
 """
 
 from django.test import TestCase
-from auth_service.utils import _to_bytes, derive_vault_key, derive_auth_key, is_auth_key_match
+from auth_service.utils.hashing import _to_bytes, derive_vault_key, derive_auth_key, is_auth_key_match
 
 
 class UtilsTests(TestCase):

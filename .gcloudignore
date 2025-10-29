@@ -24,3 +24,6 @@ venv/
 env/
 
 .env
+
+# Front-End
+node_modules/

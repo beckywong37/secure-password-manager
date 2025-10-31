@@ -253,7 +253,11 @@ class MFAVerifyView(generics.CreateAPIView):
 
         # Successful validation
         jwt_tokens = serializer.save()
-        return Response(jwt_tokens, status=status.HTTP_200_OK)
+        response = Response(jwt_tokens, status=status.HTTP_200_OK)
+        response.delete_cookie('mfa-setup-token')
+        response.delete_cookie('mfa-verify-token')
+
+        return response
 
 
 # Template Views

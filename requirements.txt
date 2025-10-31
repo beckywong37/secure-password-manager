@@ -1,8 +1,12 @@
 asgiref==3.10.0
 Django==5.2.7
 django-environ==0.12.0
+django_otp==1.6.3
+django_two_factor_auth==1.18.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+qrcode==8.2
+pillow==12.0.0
 PyJWT==2.10.1
 sqlparse==0.5.3
 google-cloud-secret-manager==2.25.0

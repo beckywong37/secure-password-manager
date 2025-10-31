@@ -83,6 +83,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         vault_key = derive_vault_key(email, master_password)
         auth_key = derive_auth_key(vault_key, master_password)
 
+        self.validated_data['vault_key'] = vault_key
+
         # Create user with auth key
         user = User.objects.create(
             username=username,
@@ -145,6 +147,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Invalid username or password.')
 
         attrs['user'] = user
+        attrs['vault_key'] = vault_key
 
         return attrs
 
@@ -192,6 +195,7 @@ class MFASetupSerializer(serializers.Serializer):
         except Exception:
             raise serializers.ValidationError({"mfa_token": "Invalid or expired MFA token."})
         attrs['user_id'] = data['user_id']
+        attrs['vault_key'] = data['vault_key']
 
         try:
             user = User.objects.get(id=attrs['user_id'])
@@ -212,6 +216,7 @@ class MFASetupSerializer(serializers.Serializer):
             - dict: Base64-encoded QR code image and MFA verify token.
         """
         user = validated_data['user']
+        vault_key = validated_data['vault_key']
 
         # Create or reset TOTP device
         device, _ = TOTPDevice.objects.get_or_create(user=user, name='default')
@@ -224,7 +229,7 @@ class MFASetupSerializer(serializers.Serializer):
         qr_code = base64.b64encode(buffer.getvalue()).decode()    # Converts binary bytes to ASCII then into plain text
 
         # Create MFA verify token
-        mfa_token = create_signed_token(data={'user_id': user.id}, salt='mfa-verify')
+        mfa_token = create_signed_token(data={'user_id': user.id, 'vault_key': vault_key}, salt='mfa-verify')
 
         return {
             "qr_code": f"data:image/png;base64,{qr_code}",
@@ -281,6 +286,7 @@ class MFAVerifySerializer(serializers.Serializer):
 
         attrs['user'] = user
         attrs['device'] = device
+        attrs['vault_key'] = data['vault_key']
         return attrs
 
     def create(self, validated_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -295,6 +301,7 @@ class MFAVerifySerializer(serializers.Serializer):
         """
         user = validated_data['user']
         device = validated_data['device']
+        vault_key = validated_data['vault_key']
 
         # Confirm MFA device
         device.confirmed = True
@@ -306,5 +313,6 @@ class MFAVerifySerializer(serializers.Serializer):
             "access": str(refresh.access_token),
             "refresh": str(refresh),
             "type": "Bearer",
-            "expires_in": 900
+            "expires_in": 900,
+            "vault_key": vault_key
         }

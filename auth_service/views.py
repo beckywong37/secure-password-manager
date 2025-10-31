@@ -63,9 +63,10 @@ class RegisterView(generics.CreateAPIView):
             return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
+        vault_key = serializer.validated_data['vault_key']
 
         # Set short lived HTTP-only cookie for MFA flow
-        setup_token = create_signed_token(data={'user_id': user.id}, salt='mfa-setup')
+        setup_token = create_signed_token(data={'user_id': user.id, 'vault_key': vault_key.hex()}, salt='mfa-setup')
         response = Response(serializer.data, status=status.HTTP_201_CREATED)
         response.set_cookie(
             'mfa-setup-token',
@@ -116,6 +117,7 @@ class LoginView(generics.CreateAPIView):
             return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.validated_data['user']
+        vault_key = serializer.validated_data['vault_key']
 
         # Check if user has a confirmed TOTP device
         device = default_device(user)
@@ -139,7 +141,7 @@ class LoginView(generics.CreateAPIView):
             mfa_token_salt, cookie_name = 'mfa-setup', 'mfa-setup-token'
 
         # Set short lived HTTP-only cookie for MFA flow
-        mfa_token = create_signed_token(data={'user_id': user.id}, salt=mfa_token_salt)
+        mfa_token = create_signed_token(data={'user_id': user.id, 'vault_key': vault_key.hex()}, salt=mfa_token_salt)
         response.set_cookie(
             cookie_name,
             mfa_token,

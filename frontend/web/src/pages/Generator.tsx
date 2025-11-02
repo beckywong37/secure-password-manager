@@ -13,6 +13,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports
 import { useState } from 'react';
+import styles from './Generator.module.css';
 
 // Data returned by Password Strength Calculator
 interface PasswordStrengthResult {
@@ -111,20 +112,9 @@ export default function GeneratorPage() {
 
   // JSX to render Password Generator and Strength Calculator
   return (
-    // Sets background color to dark blue 
-    <div style={{ 
-      backgroundColor: "darkblue", 
-      minHeight: "100vh", 
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      padding: "80px 0 30px 0", // Add space at the top and bottom
-      boxSizing: "border-box",
-      fontFamily: '"Inter", "Helvetica Neue", Helvetica, Arial, sans-serif',
-    }}>
+    <div className={styles.pageContainer}>
       {/* Container for Password Generator and Strength Calculator */}
-      <div style={{ maxWidth: 500, margin: "0 auto", backgroundColor: "white", padding: 20, borderRadius: 8 }}>
+      <div className={styles.contentContainer}>
         <h2>Random Password Generator</h2>
         <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 10 }}>A generator for secure passwords to protect your online accounts.</p>
 
@@ -182,26 +172,9 @@ export default function GeneratorPage() {
         {/* Generate Password Button */}
         <button
           onClick={hitGeneratePassword}
-          style={{
-            marginTop: 10,
-            padding: "10px 20px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "background-color 0.2s ease",
-          }}
-          // For hovering over button, change color to dark blue
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "darkblue";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#007bff";
-          }}
-        >Generate Password
+          className={`${styles.button} ${styles.buttonPrimary}`}
+        >
+          Generate Password
         </button>
 
         {/* Display error message if password generation fails */}
@@ -239,15 +212,7 @@ export default function GeneratorPage() {
             <button
               onClick={() => checkPasswordStrength(checkPassword)}
               disabled={isCheckingStrength || !checkPassword}
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#007bff",
-                color: "white",
-                border: "none",
-                borderRadius: 4,
-                cursor: isCheckingStrength || !checkPassword ? "not-allowed" : "pointer",
-                opacity: isCheckingStrength || !checkPassword ? 0.6 : 1,
-              }}
+              className={`${styles.button} ${styles.buttonSecondary}`}
             >
               {isCheckingStrength ? "Checking..." : "Check Strength"}
             </button>

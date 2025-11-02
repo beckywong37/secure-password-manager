@@ -19,6 +19,7 @@ References:
 """
 from django.shortcuts import render
 from .utils import generate_password, password_strength
+from .serializers import PasswordOptionsSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -71,53 +72,20 @@ class PasswordGeneratorAPIView(APIView):
     def post(self, request):
         """REST API endpoint for generating secure password
         Returns: Generated password or error message in JSON format"""
-        try:
-            # Get user selection for password, defaults set if not provided
-            length = request.data.get('length', 15)
-            uppercase = request.data.get('uppercase', False)
-            lowercase = request.data.get('lowercase', False)
-            numbers = request.data.get('numbers', False)
-            special = request.data.get('special', False)
+        serializer = PasswordOptionsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            # Validate length is an integer and within bounds
-            try:
-                length = int(length)
-                if length < 4 or length > 128:
-                    return Response(
-                        {'error': 'Invalid password length. Enter a number between 4 and 128.'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            except (ValueError, TypeError):
-                return Response(
-                    {'error': 'Invalid password length. Must be a number between 4 and 128.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        opts = serializer.validated_data  # {'length': ..., 'uppercase': ..., ...}
+        password = generate_password(**opts)
 
-            # Validate that at least one character type is selected
-            if not any([uppercase, lowercase, numbers, special]):
-                return Response(
-                    {'error': 'Check at least one option to generate password!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Generate password based on user selections
-            password = generate_password(length, uppercase, lowercase, numbers, special)
-
-            # Check if password generation failed (shouldn't happen after validation, but just in case)
-            if password == 'Check at least one option!':
-                return Response(
-                    {'error': 'Check at least one option to generate password!'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Return password in JSON format
-            return Response({'password': password}, status=status.HTTP_200_OK)
-
-        except Exception as e:
+        # Check if password generation failed (shouldn't happen after validation, but just in case)
+        if password == 'Check at least one option!':
             return Response(
-                {'error': f'An error occurred while generating password: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {'error': 'Check at least one option to generate password!'},
+                status=status.HTTP_400_BAD_REQUEST
             )
+
+        return Response({'password': password}, status=status.HTTP_200_OK)
 
 
 class PasswordStrengthAPIView(APIView):

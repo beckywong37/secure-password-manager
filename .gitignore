@@ -209,3 +209,4 @@ __marimo__/
 #TODO: Remove this once templates are complete for Sprint 2
 generator/templates/
 
+node_modules/

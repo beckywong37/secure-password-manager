@@ -9,7 +9,7 @@ It also calculates the strength of the password based on the criteria defined by
 It can be generated for HTML form submission or as a REST API endpoint.
 
 ** GenAI Citation for Becky: **
-Portions of this code related to error handling for the API endpoints were generated with 
+Portions of this code related to error handling for the API endpoints were generated with
 the help of ChatGPT-5.
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/69045b2c-e3f4-832b-bd71-d59fcef093c6)
 documents the GenAI Interaction that led to my code.

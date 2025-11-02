@@ -84,7 +84,8 @@ export default function GeneratorPage() {
       });
       // Django responds but bad request, setStrengthError to display error message in the UI
       if (!response.ok) {
-        return setStrengthError(`Server error: ${response.statusText}`);
+        setStrengthError(`Server error: ${response.statusText}`);
+        return;
       } 
       // If POST request is successful, update React state with strength data so it will display in UI
       const data = await response.json();
@@ -92,6 +93,9 @@ export default function GeneratorPage() {
     // Django server not responding, setStrengthError to display error message in the UI
     } catch (err) {
       setStrengthError("Server not reachable. Check if Django is running and connected");
+    } finally {
+      // Always reset loading state, even if there's an error
+      setIsCheckingStrength(false);
     }
   }
 

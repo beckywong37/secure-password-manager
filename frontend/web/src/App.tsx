@@ -4,7 +4,9 @@ This sets up the routes for the Secure Password Manager web app.
 Features:
 - Uses React Router to navigate between single page apps
 - Navigation bar at the top with links to different pages:
-  - Password Generator, Login Page, Vault Page
+  - Password Generator: http://localhost:5173/generator
+  - Login Page: http://localhost:5173/login
+  - Vault Page: http://localhost:5173/vault
 */
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';

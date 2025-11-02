@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     "hello",
     "auth_service",
     "generator",
+    "vault",
 ]
 
 # DRF configuration

@@ -29,6 +29,13 @@ class MFASetupTests(APITestCase):
         """Runs before every test to initialize reusable attributes"""
         self.factory = APIRequestFactory()
 
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
     def test_mfa_setup_view_missing_cookie(self):
         """Ensure MFASetupView returns 400 if MFA cookie is missing."""
         request = self.factory.get(reverse('auth_service:mfa-setup-api'))

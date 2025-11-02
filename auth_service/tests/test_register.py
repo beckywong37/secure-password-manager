@@ -35,6 +35,13 @@ class RegisterTests(APITestCase):
         }
         self.client.post(url, data, format='json')
 
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
     def test_user_mode_str_returns_username(self):
         """
         Ensure the __str__ method of the User model returns the username.

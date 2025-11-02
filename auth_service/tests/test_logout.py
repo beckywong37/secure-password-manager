@@ -65,6 +65,13 @@ class LogoutTests(APITestCase):
         self.access_token = verify_response.data['access']
         self.refresh_token = verify_response.data['refresh']
 
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
     def test_logout_valid_token(self):
         url = reverse('auth_service:logout-api')
         data = {

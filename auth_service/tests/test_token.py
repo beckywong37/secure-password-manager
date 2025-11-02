@@ -65,6 +65,13 @@ class TokenTests(APITestCase):
         self.access_token = verify_response.data['access']
         self.refresh_token = verify_response.data['refresh']
 
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
     def test_refresh_token_valid_token(self):
         """
         Ensure token is refreshed

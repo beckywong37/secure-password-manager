@@ -36,6 +36,13 @@ class LoginTests(APITestCase):
         }
         self.client.post(url, data, format='json')
 
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
     def test_login_existing_user_without_mfa(self):
         """
         Ensure login returns 403 when MFA is not yet configured.

@@ -13,6 +13,7 @@
     <div id="successMessage"></div>
     
     <form id="registerForm">
+      {% csrf_token %}
       <input type="text" id="usernameInput" placeholder="Username" required/>
       <input type="email" id="emailInput" placeholder="Email" required/>
       <input type="password" id="passwordInput" placeholder="Password" required/>
@@ -21,6 +22,24 @@
     </form>
 
    <script>
+      // Reference: https://docs.djangoproject.com/en/5.2/howto/csrf/
+      function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
       document.getElementById("registerBtn").addEventListener("click", async (e) => {
         e.preventDefault();
 
@@ -40,8 +59,10 @@
           const response = await fetch("{% url 'auth_service:register-api' %}", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
             },
+            mode: "same-origin",  // Do not send CSRF token to another domain.
             body: JSON.stringify(payload)
           });
 

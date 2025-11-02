@@ -10,6 +10,12 @@ References:
 
     - Django REST framework Simple JTW documentation:
     https://django-rest-framework-simplejwt.readthedocs.io/en/latest/
+
+    - Decorating Class Based Views:
+    https://docs.djangoproject.com/en/5.2/topics/class-based-views/intro/
+
+    - CSRF Protection:
+    https://docs.djangoproject.com/en/5.2/howto/csrf/
 """
 
 from rest_framework import serializers
@@ -19,6 +25,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
 from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_protect
+from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
 from auth_service.utils.mfa import create_signed_token
@@ -27,6 +35,7 @@ User = get_user_model()
 
 
 # API Views
+@method_decorator(csrf_protect, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     """
     API endpoint for registering a new user.
@@ -79,6 +88,7 @@ class RegisterView(generics.CreateAPIView):
         return response
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class LoginView(generics.CreateAPIView):
     """
     API endpoint for authenticating an existing user.
@@ -153,6 +163,7 @@ class LoginView(generics.CreateAPIView):
         return response
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class MFASetupView(generics.CreateAPIView):
     """
     API endpoint for initializing MFA setup (TOTP device and QR generation).
@@ -208,6 +219,7 @@ class MFASetupView(generics.CreateAPIView):
         return response
 
 
+@method_decorator(csrf_protect, name='dispatch')
 class MFAVerifyView(generics.CreateAPIView):
     """
     API endpoint for verifying MFA codes (TOTP) and issuing JWT tokens.

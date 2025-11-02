@@ -24,6 +24,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from django.views import View
 
 
@@ -73,7 +74,24 @@ class PasswordGeneratorAPIView(APIView):
         """REST API endpoint for generating secure password
         Returns: Generated password or error message in JSON format"""
         serializer = PasswordOptionsSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            # Normalize DRF serializer errors to simple {'error': 'message'} format
+            error_message = None
+            if 'non_field_errors' in e.detail:
+                error_message = str(e.detail['non_field_errors'][0])
+            else:
+                # If there are field-specific errors, get the first one
+                for field, errors in e.detail.items():
+                    error_message = str(errors[0]) if isinstance(errors, list) else str(errors)
+                    break
+
+            return Response(
+                {'error': error_message or 'Validation error occurred'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         opts = serializer.validated_data  # {'length': ..., 'uppercase': ..., ...}
         password = generate_password(**opts)

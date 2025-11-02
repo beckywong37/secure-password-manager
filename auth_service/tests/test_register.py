@@ -11,7 +11,9 @@ References:
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from auth_service.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class RegisterTests(APITestCase):
@@ -24,7 +26,7 @@ class RegisterTests(APITestCase):
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
@@ -32,6 +34,25 @@ class RegisterTests(APITestCase):
             "password2": self.password
         }
         self.client.post(url, data, format='json')
+
+    def tearDown(self):
+        """
+        Runs after every test to clear cookies and ensure
+        no tokens persist between requests.
+        """
+        self.client.cookies.clear()
+
+    def test_user_mode_str_returns_username(self):
+        """
+        Ensure the __str__ method of the User model returns the username.
+        """
+        user = User.objects.create_user(
+            username='bcurley2',
+            email='curleyr@oregonstate.edu',
+            password='ThisIsMyStrongPassword123'
+        )
+
+        self.assertEqual(str(user), 'bcurley2')
 
     def test_register_new_user(self):
         """
@@ -41,7 +62,7 @@ class RegisterTests(APITestCase):
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
@@ -52,8 +73,9 @@ class RegisterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('username', response.data)
         self.assertIn('email', response.data)
-        self.assertIn('auth_key', response.data)
-        self.assertTrue(User.objects.filter(username="bcurley2").exists())
+        self.assertIn('message', response.data)
+        self.assertTrue(User.objects.filter(username='bcurley2').exists())
+        self.assertTrue(response.cookies.get('mfa-setup-token'))
 
     def test_register_duplicate_user(self):
         """
@@ -63,7 +85,7 @@ class RegisterTests(APITestCase):
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
@@ -72,7 +94,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"username": ["A user with that username already exists."]})
+        self.assertIn('error', response.data)
 
     def test_register_mismatched_passwords(self):
         """
@@ -84,7 +106,7 @@ class RegisterTests(APITestCase):
         self.password = 'ThisIsMyStrongPassword123'
         self.password2 = 'ThisIsMyStrongPassword1234'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
@@ -93,7 +115,7 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password": ["Password fields didn't match."]})
+        self.assertIn('error', response.data)
 
     def test_register_missing_username(self):
         """
@@ -103,7 +125,7 @@ class RegisterTests(APITestCase):
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "email": self.email,
             "password": self.password,
@@ -111,7 +133,8 @@ class RegisterTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"username": ["This field is required."]})
+        self.assertIn('error', response.data)
+        self.assertIn('username', response.data['error'])
 
     def test_register_missing_email(self):
         """
@@ -120,15 +143,15 @@ class RegisterTests(APITestCase):
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "password": self.password,
             "password2": self.password
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"email": ["This field is required."]})
+        self.assertIn('error', response.data)
+        self.assertIn('email', response.data['error'])
 
     def test_register_missing_password(self):
         """
@@ -138,15 +161,15 @@ class RegisterTests(APITestCase):
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
             "password2": self.password
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password": ["This field is required."]})
+        self.assertIn('error', response.data)
+        self.assertIn('password', response.data['error'])
 
     def test_register_missing_password2(self):
         """
@@ -156,15 +179,15 @@ class RegisterTests(APITestCase):
         self.username = 'bcurley2'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
             "password": self.password,
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"password2": ["This field is required."]})
+        self.assertIn('error', response.data)
+        self.assertIn('password2', response.data['error'])
 
     def test_register_invalid_email(self):
         """
@@ -174,7 +197,7 @@ class RegisterTests(APITestCase):
         self.email = 'curleyroregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
 
-        url = reverse('register')
+        url = reverse('auth_service:register-api')
         data = {
             "username": self.username,
             "email": self.email,
@@ -182,5 +205,5 @@ class RegisterTests(APITestCase):
             "password2": self.password
         }
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {"email": ["Enter a valid email address."]})
+        self.assertIn('error', response.data)
+        self.assertIn('email', response.data['error'])

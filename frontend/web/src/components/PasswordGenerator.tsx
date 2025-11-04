@@ -15,7 +15,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from 'react';
-import styles from '../pages/Generator.module.css';
+import styles from '../pages/Page.module.css';
 
 // Props for the Password Generator component
 // onPasswordGenerated: called when password successfully generated (string password) else void

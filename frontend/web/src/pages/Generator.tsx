@@ -12,7 +12,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports
 import { useState } from 'react';
-import styles from './Generator.module.css';
+import styles from './Page.module.css';
 import PasswordGenerator from '../components/PasswordGenerator';
 import PasswordStrengthCalculator from '../components/PasswordStrengthCalculator';
 

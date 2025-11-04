@@ -11,6 +11,7 @@ Features:
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import GeneratorPage from './pages/Generator';
+import LoginPage from './pages/Login';
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
           <Link to="/vault">Vault Page</Link>
         </nav>
         <Routes>
-          <Route path="/login" element={<div>Login Page Under Construction</div>} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/generator" element={<GeneratorPage />} />
           <Route path="/vault" element={<div>Vault Page Under Construction</div>} />
         </Routes>

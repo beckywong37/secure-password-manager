@@ -12,6 +12,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './Page.module.css';
 import PasswordGenerator from '../components/PasswordGenerator';
 import PasswordStrengthCalculator from '../components/PasswordStrengthCalculator';
@@ -49,6 +50,16 @@ export default function GeneratorPage() {
 
         {/* Password Strength Calculator Section */}
         <PasswordStrengthCalculator passwordToAutoCheck={password} />
+
+        {/* Link go back to Vault Page */}
+        <div style={{ marginTop: 35, textAlign: "center" }}>
+          <Link 
+            to="/vault" 
+            style={{color: "#007bff"}}
+          >
+            View Your Vault →
+          </Link>
+        </div>
       </div>
     </div>
   );

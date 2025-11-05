@@ -69,3 +69,40 @@
   cursor: not-allowed;
 }
 
+/* Focus effect for input fields */
+input:focus {
+  border-color: #345b84;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
+}
+
+/* Input label styling */
+.inputLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: #333;
+}
+
+/* Input field styling */
+.inputField {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid lightgray;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Form card styling */
+.formCard {
+  max-width: 300px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: #ccdbe9;
+  text-align: center;
+}

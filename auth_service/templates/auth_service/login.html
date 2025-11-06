@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+  </head>
+  <body>
+
+    <h1>Login</h1>
+    <p>Complete the form below to login.</p>
+
+    <div id="successMessage"></div>
+    
+    <form id="loginForm">
+      <input type="text" id="usernameInput" placeholder="Username" required/>
+      <input type="password" id="passwordInput" placeholder="Password" required/>
+      <button id="loginBtn">Login</button>
+    </form>
+
+   <script>
+      // Reference: https://docs.djangoproject.com/en/5.2/howto/csrf/
+      function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      document.getElementById("loginBtn").addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("usernameInput").value;
+        const password = document.getElementById("passwordInput").value;
+
+        const payload = {
+          username: username,
+          password: password
+        };
+
+        try {
+          const response = await fetch("{% url 'auth_service:login-api' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            mode: "same-origin",  // Do not send CSRF token to another domain.
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            console.log("Login successful: ", data);
+
+            // Redirect to MFA verify page (Django route)
+            window.location.href = "{% url 'auth_service:mfa-verify-page' %}";
+
+          } else if (response.status === 403 && data.is_mfa_setup === false) {
+            console.warn("MFA not set up yet: ", data);
+
+            // Redirect to MFA setup page (Django route)
+            window.location.href = "{% url 'auth_service:mfa-setup-page' %}";
+          
+          } else{
+            console.error("Login error:", data);
+            document.getElementById("successMessage").textContent = "Error logging in.";
+          }
+        } catch (error) {
+          console.error("Request failed: ", error);
+          document.getElementById("successMessage").textContent = "Network error.";
+        }
+      });
+
+    </script>
+
+  </body>
+</html>

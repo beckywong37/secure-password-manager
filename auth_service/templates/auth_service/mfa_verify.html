@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFA Verify</title>
+  </head>
+  <body>
+
+    <h1>MFA Verify</h1>
+    <p>Enter the code from your authentication app below and submit.</p>
+    
+    <div id="successMessage"></div>
+    
+    <form id="mfaVerifyForm">
+      <input type="text" id="mfaCodeInput" maxlength="6" placeholder="Enter 6-digit code" required/>
+      <button id="mfaVerifyBtn">Verify</button>
+    </form>
+
+   <script>
+      // Reference: https://docs.djangoproject.com/en/5.2/howto/csrf/
+      function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      document.getElementById("mfaVerifyBtn").addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const mfaCode = document.getElementById("mfaCodeInput").value;
+
+        const payload = {
+          mfa_code: mfaCode
+        };
+        console.log(mfaCode)
+
+        try {
+          const response = await fetch("{% url 'auth_service:mfa-verify-api' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            mode: "same-origin",  // Do not send CSRF token to another domain.
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+          
+          if (response.ok) {
+            console.log("Response: ", data);
+            document.getElementById("successMessage").textContent = "MFA verified successfully!";
+          
+          } else {
+            console.error("Error: ", data);
+            document.getElementById("successMessage").textContent = "Invalid code, please try again.";
+          }
+        } catch (error) {
+          console.error("Request failed: ", error);
+          document.getElementById("successMessage").textContent = "Network error.";
+        }
+      });
+
+    </script>
+
+  </body>
+</html>

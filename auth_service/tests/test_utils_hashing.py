@@ -1,23 +1,23 @@
 """
-Auth Service Login Tests
+Auth Service Hashing Utils Tests
 
-This module provides tests for auth service utils.
+This module provides tests for auth_service.utils.hashing.
 """
 
 from django.test import TestCase
-from auth_service.utils import _to_bytes, derive_vault_key, derive_auth_key, is_auth_key_match
+from auth_service.utils.hashing import _to_bytes, derive_vault_key, derive_auth_key, is_auth_key_match
 
 
 class UtilsTests(TestCase):
 
     def test_to_bytes_converts_string_to_bytes(self):
         """Ensure helper function converts string input to bytes"""
-        value = _to_bytes("This is a string")
+        value = _to_bytes('This is a string')
         self.assertIsInstance(value, bytes)
 
     def test_to_bytes_leaves_bytes_input_as_bytes(self):
         """Ensure helper function keeps bytes input as bytes"""
-        value = _to_bytes(b"This is bytes")
+        value = _to_bytes(b'This is bytes')
         self.assertIsInstance(value, bytes)
 
     def test_derived_vault_key_length(self):

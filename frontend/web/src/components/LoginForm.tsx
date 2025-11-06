@@ -55,7 +55,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
       <form onSubmit={submitLoginForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         <div>
           <label className={styles.inputLabel}>
-            Username or Email
+            Username or Email *
           </label>
           <input
             type="text"
@@ -68,7 +68,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
         <div>
           <label className={styles.inputLabel}>
-            Password
+            Password *
           </label>
           <input
             type="password"

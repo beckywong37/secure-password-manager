@@ -17,7 +17,7 @@
   top: 0;
   left: 0;
   right: 0;
-  padding: 80px 0 30px 0;
+  padding: 20px 0 30px 0;
   box-sizing: border-box;
 }
 
@@ -26,7 +26,7 @@
   max-width: 500px;
   margin: 0 auto;
   background-color: var(--background-secondary);
-  padding: 20px;
+  padding: 10px 20px 20px 20px;
   border-radius: 8px;
 }
 
@@ -76,7 +76,7 @@ input:focus {
   box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
 }
 
-/* Input label styling */
+/* Input label styling (ie username, password, etc.) */
 .inputLabel {
   display: block;
   margin-bottom: 8px;
@@ -85,7 +85,7 @@ input:focus {
   color: #333;
 }
 
-/* Input field styling */
+/* Input field styling (ie white box for input fields*/
 .inputField {
   width: 100%;
   padding: 10px;
@@ -98,10 +98,10 @@ input:focus {
 
 /* Form card styling */
 .formCard {
-  max-width: 300px;
-  margin: 40px auto;
+  max-width: 350px;
+  margin: 15px auto;
   padding: 30px;
-  border-radius: 8px;
+  border-radius: 25px; /* Rounds corners of form card */
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   background-color: #ccdbe9;
   text-align: center;

@@ -65,14 +65,14 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
       <div className={styles.formCard}>
         <h2>Create a New Account</h2>
         <p style={{ fontSize: "1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
-          Register by providing the following information
+          To register provide the following information
         </p>
       </div>
 
       <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         <div>
           <label className={styles.inputLabel}>
-            Username
+            Username *
           </label>
           <input
             type="text"
@@ -85,7 +85,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
 
         <div>
           <label className={styles.inputLabel}>
-            Email
+            Email *
           </label>
           <input
             type="email"
@@ -98,7 +98,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
 
         <div>
           <label className={styles.inputLabel}>
-            Password
+            Password *
           </label>
           <input
             type="password"
@@ -111,7 +111,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
 
         <div>
           <label className={styles.inputLabel}>
-            Confirm Password
+            Confirm Password *
           </label>
           <input
             type="password"

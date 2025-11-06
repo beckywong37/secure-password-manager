@@ -40,6 +40,13 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
     setError("");
     onError("");
 
+    // Error message if no options selected
+    if (!uppercase && !lowercase && !numbers && !special) {
+      const errorMsg = "Please select at least one character type";
+      setError(errorMsg);
+      return;
+    }
+
     try {
       // Makes POST request to Django backend endpoint to generate password (relative path)
       const response = await fetch("/generator/api/generate-password/", {
@@ -68,10 +75,6 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
 
   return (
     <div>
-      <h2>Random Password Generator</h2>
-      <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 10 }}>
-        A generator for secure passwords to protect your online accounts.
-      </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {/* Character Length Slider */}

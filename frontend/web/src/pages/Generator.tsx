@@ -1,6 +1,9 @@
 /*
 This creates the Password Generator/Strength Calculator page using React.
 
+Note:
+To start the Vite dev server, run: 'npm run dev' in the frontend/web directory.
+
 ** GenAI Citation for Becky: **
 Portions of this code related to the Password Generator/Strength Calculator page were generated with 
 the help of ChatGPT-5. Specifically to outline the overall architecture of the web page,
@@ -16,6 +19,7 @@ import { Link } from 'react-router-dom';
 import styles from './Page.module.css';
 import PasswordGenerator from '../components/PasswordGenerator';
 import PasswordStrengthCalculator from '../components/PasswordStrengthCalculator';
+import loginLogo from '../assets/LoginLogo.jpeg';
 
 export default function GeneratorPage() {
   const [password, setPassword] = useState("");
@@ -32,6 +36,24 @@ export default function GeneratorPage() {
     <div className={styles.pageContainer}>
       {/* Container for Password Generator and Strength Calculator */}
       <div className={styles.contentContainer}>
+            {/* Logo for Login and Registration pages */}
+             <img 
+              src={loginLogo} 
+              alt="Secure Password Manager Logo" 
+              style={{ 
+                width: "120px", 
+                height: "auto",
+                margin: "0 auto 1px", 
+                display: "block" 
+              }} 
+            /> 
+        <div className={styles.formCard}>
+          <h2>Random Password Generator</h2>
+          <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
+            A generator for secure passwords to protect your online accounts.
+          </p>
+        </div>
+        
         <PasswordGenerator 
           onPasswordGenerated={handlePasswordGenerated}
           onError={setError}

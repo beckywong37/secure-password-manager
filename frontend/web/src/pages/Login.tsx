@@ -33,6 +33,18 @@ export default function LoginPage() {
         // Use styles for page container and content container (Page.module.css)
       <div className={styles.pageContainer}>
         <div className={styles.contentContainer}>
+            {/* Logo for Login and Registration pages */}
+             <img 
+              src="src/assets/LoginLogo.jpeg" 
+              alt="Secure Password Manager Logo" 
+              style={{ 
+                width: "120px", 
+                height: "auto",
+                margin: "0 auto 1px", 
+                display: "block" 
+              }} 
+            /> 
+            
             {/* Renders either LoginForm or RegistrationForm based on the mode */}
           {forms[mode]}
         </div>

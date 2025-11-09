@@ -26,8 +26,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
+from django_otp.plugins.otp_totp.models import TOTPDevice
 from vault.models import Record
 from vault.tests.test_utils import create_user_with_auth_key
+from auth_service.utils.mfa import create_signed_token
+from unittest.mock import patch
 
 User = get_user_model()
 
@@ -608,6 +611,9 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
             username=self.username, email=self.email, password=self.password
         )
 
+        # Add confirmed TOTP device
+        TOTPDevice.objects.create(user=self.user, name="default", confirmed=True)
+
     def test_list_records_with_jwt_token(self):
         """
         Test: Access records using real JWT token authentication.
@@ -628,18 +634,37 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
             - Same result as force_authenticate but more realistic
         """
         # Step 1: Login to get JWT token
-        login_url = reverse("login")
+        login_url = reverse("auth_service:login-api")
         login_data = {"username": self.username, "password": self.password}
         login_response = self.client.post(login_url, login_data, format="json")
 
-        # Verify login succeeded
+        # Verify login succeeded - Need to verify MFA
         self.assertEqual(login_response.status_code, status.HTTP_200_OK)
-        self.assertIn("access", login_response.data)
+        self.assertTrue(login_response.cookies.get("mfa-verify-token"))
+        self.assertTrue(login_response.data.get("is_mfa_setup"))
 
-        # Step 2: Extract the access token
-        token = login_response.data["access"]
+        # Step 2: Verify MFA
+        vault_key = "06cf04db65c36c16cacc92a657de6bc0729da9e6b73c4342bf842bf58c434b46"
+        valid_token = create_signed_token(
+            {"user_id": self.user.id, "vault_key": vault_key},
+            "mfa-verify",
+        )
+        self.client.cookies["mfa-verify-token"] = valid_token
+        verify_url = reverse("auth_service:mfa-verify-api")
+        verify_data = {"mfa_code": "123456"}
+        
+        with patch.object(TOTPDevice, "verify_token", return_value=True):
+            verify_response = self.client.post(verify_url, verify_data, format="json")
 
-        # Step 3: Create a record to retrieve (using the registered user)
+        self.assertEqual(verify_response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", verify_response.data)
+        self.assertIn("refresh", verify_response.data)
+        self.assertIn("vault_key", verify_response.data)
+
+        # Step 3: Extract the access token
+        token = verify_response.data["access"]
+
+        # Step 4: Create a record to retrieve (using the registered user)
         Record.objects.create(
             title="Test Record",
             user=self.user,
@@ -650,7 +675,7 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
             notes="",
         )
 
-        # Step 4: Use token to access protected endpoint
+        # Step 5: Use token to access protected endpoint
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
         url = reverse("record-list")

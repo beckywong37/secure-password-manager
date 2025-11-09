@@ -22,7 +22,7 @@ These utilities:
 """
 
 from auth_service.models import User
-from auth_service.utils import derive_vault_key, derive_auth_key
+from auth_service.utils.hashing import derive_vault_key, derive_auth_key
 
 
 def create_user_with_auth_key(

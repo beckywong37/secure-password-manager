@@ -38,11 +38,11 @@ class APITests(TestCase):
 
     def test_default_options_api(self):
         """Tests password generation via API call with default options.
-        Default length is 15, everything else set to False"""
+        Should return 400 error since no character types are selected"""
         url = reverse('password_generator_api')
         data = {}
         response = self.client.post(url, data, format='json')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('password', response.data)
-        self.assertEqual(response.data['password'], 'Check at least one option!')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('error', response.data)
+        self.assertEqual(response.data['error'], 'Check at least one option to generate password!')

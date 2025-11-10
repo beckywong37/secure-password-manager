@@ -9,6 +9,7 @@ for testing the MFA flow.
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView, TokenBlacklistView
 from auth_service.views import (
+    get_csrf_token,
     RegisterView,
     LoginView,
     MFASetupView,
@@ -16,13 +17,14 @@ from auth_service.views import (
     RegisterPageView,
     LoginPageView,
     MFASetupPageView,
-    MFAVerifyPageView,
+    MFAVerifyPageView
 )
 
 app_name = 'auth_service'
 
 urlpatterns = [
     # API paths
+    path('api/csrf/', get_csrf_token, name='csrf-token-api'),
     path('api/register/', RegisterView.as_view(), name='register-api'),
     path('api/login/', LoginView.as_view(), name='login-api'),
     path('api/mfa-setup/', MFASetupView.as_view(), name='mfa-setup-api'),

@@ -24,8 +24,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
+from django.http import JsonResponse
 from django.views.generic import TemplateView
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
@@ -35,6 +37,18 @@ User = get_user_model()
 
 
 # API Views
+@require_GET
+@ensure_csrf_cookie
+def get_csrf_token():
+    """
+    API endpoing for CSRF initialization
+
+    This endpoint should be called from React frontend before any POST requests
+    to ensure the browser has a valid CSRF cookie set.
+    """
+    return JsonResponse({"message": "CSRF cookie set"})
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     """

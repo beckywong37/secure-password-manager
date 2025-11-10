@@ -25,7 +25,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
 from django.http import JsonResponse
-from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_GET
 from django.utils.decorators import method_decorator
@@ -284,27 +283,3 @@ class MFAVerifyView(generics.CreateAPIView):
         response.delete_cookie('mfa-verify-token')
 
         return response
-
-
-# Template Views
-# TODO:
-# Similar to comment in urls.py. These are to support the current auth_service templates that were created primarily
-# for local testing. Once the frontend integration is complete, these can be removed.
-class RegisterPageView(TemplateView):
-    """Render registration page for local UI testing."""
-    template_name = 'auth_service/register.html'
-
-
-class LoginPageView(TemplateView):
-    """Render login page for local UI testing."""
-    template_name = 'auth_service/login.html'
-
-
-class MFASetupPageView(TemplateView):
-    """Render MFA setup page for local UI testing."""
-    template_name = 'auth_service/mfa_setup.html'
-
-
-class MFAVerifyPageView(TemplateView):
-    """Render MFA verification page for local UI testing."""
-    template_name = 'auth_service/mfa_verify.html'

@@ -33,6 +33,7 @@ jobs:
       # Provided only for CI steps; the deployed service reads both from Secret Manager.
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      APPENGINE_URL: https://secure-password-manager-475618.uc.r.appspot.com/
 
     steps:
       - name: Checkout

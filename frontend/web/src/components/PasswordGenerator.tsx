@@ -15,7 +15,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from 'react';
-import styles from '../pages/Generator.module.css';
+import styles from '../pages/Page.module.css';
 
 // Props for the Password Generator component
 // onPasswordGenerated: called when password successfully generated (string password) else void
@@ -39,6 +39,13 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
     // Clear previous error before generating new password
     setError("");
     onError("");
+
+    // Error message if no options selected
+    if (!uppercase && !lowercase && !numbers && !special) {
+      const errorMsg = "Please select at least one character type";
+      setError(errorMsg);
+      return;
+    }
 
     try {
       // Makes POST request to Django backend endpoint to generate password (relative path)
@@ -68,10 +75,6 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
 
   return (
     <div>
-      <h2>Random Password Generator</h2>
-      <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 10 }}>
-        A generator for secure passwords to protect your online accounts.
-      </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {/* Character Length Slider */}

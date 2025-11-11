@@ -85,11 +85,14 @@ DEBUG = env("DEBUG", default="False") == "True"
 # Development fallback: Only use a default SECRET_KEY in DEBUG mode
 # For production, SECRET_KEY must be set via environment variable or Secret Manager
 if not SECRET_KEY and DEBUG:
-    SECRET_KEY = "django-insecure-dev-key-change-in-production-do-not-use-in-production"
+    SECRET_KEY = (
+        "django-insecure-dev-key-change-in-production-do-not-use-in-production"
+    )
     import warnings
+
     warnings.warn(
         "Using default SECRET_KEY for development. Set SECRET_KEY in .env or environment for production!",
-        UserWarning
+        UserWarning,
     )
 
 USE_CLOUD_SQL = os.environ.get("USE_CLOUD_SQL", "False") == "True"
@@ -120,6 +123,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
     "corsheaders",
     "django_otp",
     "django_otp.plugins.otp_static",
@@ -134,6 +138,7 @@ INSTALLED_APPS = [
     "hello",
     "auth_service",
     "generator",
+    "vault",
 ]
 
 # DRF configuration
@@ -141,6 +146,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 # DRF Simple JWT configuration
@@ -149,6 +155,16 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+}
+
+# drf-spectacular configuration
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Secure Password Manager API",
+    "DESCRIPTION": "API for managing secure password records and user authentication",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": r"/api/",
 }
 
 MIDDLEWARE = [
@@ -336,4 +352,3 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-

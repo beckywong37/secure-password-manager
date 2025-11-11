@@ -1,0 +1,10 @@
+[run]
+omit = 
+    tests/*
+    tests/**/*
+    */tests/*
+    */tests/**/*
+    *test.py
+    *Test.py
+    *tests*
+    __

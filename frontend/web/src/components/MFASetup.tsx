@@ -10,7 +10,7 @@ Features:
 // Imports React and styles
 import { useState, useEffect } from "react";
 import styles from "../pages/Page.module.css";
-import { ensureCSRFToken, getCookie } from "../utils/cookies";
+import { getCookie } from "../utils/cookies";
 
 interface MFASetupFormProps {
   onShowMFAVerify: () => void;
@@ -20,9 +20,8 @@ export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
   const [qrCode, setQrCode] = useState("");
   const [error, setError] = useState("");
 
-  // Ensure CSRF cookie exists and fetch QR code after component is rendered
+  // Fetch QR code after component is rendered
   useEffect(() => {
-    ensureCSRFToken();
     getQRCode();
   }, []);
 

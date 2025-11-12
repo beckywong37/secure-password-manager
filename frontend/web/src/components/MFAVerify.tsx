@@ -11,17 +11,12 @@ Features:
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { ensureCSRFToken, getCookie } from "../utils/cookies";
+import { getCookie } from "../utils/cookies";
 
 export default function MFAVerifyForm() {
   const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  // Ensure CSRF cookie exists after component is rendered
-  useEffect(() => {
-    ensureCSRFToken();
-  }, []);
 
   // Runs when user submits form
   async function submitMFAForm(e: React.FormEvent) {

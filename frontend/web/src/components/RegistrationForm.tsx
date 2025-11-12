@@ -18,7 +18,7 @@ documents the GenAI Interaction that led to my code.
 // Imports React and styles
 import { useState, useEffect } from "react";
 import styles from "../pages/Page.module.css";
-import { ensureCSRFToken, getCookie } from "../utils/cookies";
+import { getCookie } from "../utils/cookies";
 
 interface RegistrationFormProps {
   // onSwitchToLogin is a function from parent that switches view to login form
@@ -37,11 +37,6 @@ export default function RegistrationForm({
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
-
-  // Ensure CSRF cookie exists after component is rendered
-  useEffect(() => {
-    ensureCSRFToken();
-  }, []);
 
   // Runs when user submits registration form
   async function submitRegistrationForm(e: React.FormEvent) {

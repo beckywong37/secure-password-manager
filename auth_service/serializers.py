@@ -135,7 +135,7 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         master_password = attrs.get('password')
 
-        user = User.objects.filter(username=username).first()
+        user = User.objects.get(username=username)
         if not user:
             raise serializers.ValidationError('Invalid username or password')
 

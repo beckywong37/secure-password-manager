@@ -7,7 +7,7 @@ import { getCookie } from "./getCookie";
 */
 export const ensureCSRFToken = async (): Promise<void> => {
   if (!getCookie("csrftoken")) {
-    await fetch("/auth/api/csrf/", {
+    await fetch("/api/auth/csrf/", {
       credentials: "include",
     });
   }

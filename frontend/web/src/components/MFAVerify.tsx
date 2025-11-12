@@ -40,7 +40,7 @@ export default function MFAVerifyForm() {
         return;
       }
 
-      const response = await fetch("/auth/api/mfa-verify/", {
+      const response = await fetch("/api/auth/mfa-verify/", {
         method: "POST",
         credentials: "include",
         headers: {

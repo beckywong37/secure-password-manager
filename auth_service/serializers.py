@@ -219,6 +219,7 @@ class MFASetupSerializer(serializers.Serializer):
         vault_key = validated_data['vault_key']
 
         # Create or reset TOTP device
+        TOTPDevice.objects.filter(user=user).delete()
         device, _ = TOTPDevice.objects.get_or_create(user=user, name='default')
         device.confirmed = False
         device.save()

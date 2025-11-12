@@ -192,7 +192,7 @@ class MFASetupView(generics.CreateAPIView):
     serializer_class = MFASetupSerializer
     permission_classes = [AllowAny]
 
-    def get(self, request: Request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         """
         Validate MFA setup token, create TOTP device, and return QR code.
 

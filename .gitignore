@@ -210,3 +210,4 @@ __marimo__/
 generator/templates/
 
 node_modules/
+frontend/web/coverage/

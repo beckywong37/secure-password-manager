@@ -85,11 +85,14 @@ DEBUG = env("DEBUG", default="False") == "True"
 # Development fallback: Only use a default SECRET_KEY in DEBUG mode
 # For production, SECRET_KEY must be set via environment variable or Secret Manager
 if not SECRET_KEY and DEBUG:
-    SECRET_KEY = "django-insecure-dev-key-change-in-production-do-not-use-in-production"
+    SECRET_KEY = (
+        "django-insecure-dev-key-change-in-production-do-not-use-in-production"
+    )
     import warnings
+
     warnings.warn(
         "Using default SECRET_KEY for development. Set SECRET_KEY in .env or environment for production!",
-        UserWarning
+        UserWarning,
     )
 
 USE_CLOUD_SQL = os.environ.get("USE_CLOUD_SQL", "False") == "True"
@@ -349,4 +352,3 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
-

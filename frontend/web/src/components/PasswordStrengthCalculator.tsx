@@ -15,7 +15,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState, useEffect } from 'react';
-import styles from '../pages/Generator.module.css';
+import styles from '../pages/Page.module.css';
 
 // Data returned by Password Strength Calculator
 interface PasswordStrengthResult {

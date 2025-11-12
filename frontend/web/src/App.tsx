@@ -25,6 +25,7 @@ export default function App() {
           <Link to="/vault">Vault Page</Link>
         </nav>
         <Routes>
+          <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/generator" element={<GeneratorPage />} />
           <Route path="/vault" element={<div>Vault Page Under Construction - Coming Soon!</div>} />

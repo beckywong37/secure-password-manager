@@ -6,6 +6,7 @@ Features:
 - Registration button
 - Error message display
 - Switch to login form
+- Proceed to MFA setup
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -22,10 +23,12 @@ import { ensureCSRFToken, getCookie } from "../utils/cookies";
 interface RegistrationFormProps {
   // onSwitchToLogin is a function from parent that switches view to login form
   onSwitchToLogin: () => void;
+  onShowMFASetup: () => void;
 }
 
 export default function RegistrationForm({
   onSwitchToLogin,
+  onShowMFASetup,
 }: RegistrationFormProps) {
   // State variables for form fields
   // Functions to update the values
@@ -84,6 +87,7 @@ export default function RegistrationForm({
 
       if (response.ok) {
         console.log("Auth: MFA setup required:", data);
+        onShowMFASetup();
         setUsername("");
         setEmail("");
       } else {

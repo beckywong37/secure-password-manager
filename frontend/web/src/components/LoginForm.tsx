@@ -4,7 +4,9 @@ This is the Login Form component for the Secure Password Manager web app.
 Features:
 - Username/Email and password fields
 - Login button
+- Error message display
 - Switch to registration form
+- Proceed to MFA setup or verification
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -21,9 +23,15 @@ import { ensureCSRFToken, getCookie } from "../utils/cookies";
 interface LoginFormProps {
   // onSwitchToRegister is a function from parent that switches view to registration form
   onSwitchToRegister: () => void;
+  onShowMFASetup: () => void;
+  onShowMFAVerify: () => void;
 }
 
-export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
+export default function LoginForm({
+  onSwitchToRegister,
+  onShowMFASetup,
+  onShowMFAVerify,
+}: LoginFormProps) {
   // username and password variables store the user's input
   // setUsername and setPassword are functions that update the values
   const [username, setUsername] = useState("");
@@ -71,9 +79,11 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
       if (response.ok && data.is_mfa_setup) {
         console.log("Auth: MFA verification required:", data);
+        onShowMFAVerify();
         setUsername("");
       } else if (response.status === 403 && !data.is_mfa_setup) {
-        console.log("Auth: MFA setup required.:", data);
+        console.log("Auth: MFA setup required:", data);
+        onShowMFASetup();
         setUsername("");
       } else {
         console.error("Auth: Error:", data);
@@ -110,7 +120,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         style={{ display: "flex", flexDirection: "column", gap: 15 }}
       >
         <div>
-          <label className={styles.inputLabel}>Username or Email *</label>
+          <label className={styles.inputLabel}>Username *</label>
           <input
             type="text"
             value={username}

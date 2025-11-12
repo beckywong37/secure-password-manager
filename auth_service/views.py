@@ -282,4 +282,20 @@ class MFAVerifyView(generics.CreateAPIView):
         response.delete_cookie('mfa-setup-token')
         response.delete_cookie('mfa-verify-token')
 
+        response.set_cookie(
+            'accesstoken',
+            jwt_tokens['access'],
+            max_age=900, # 15 minutes
+            httponly=True,
+            samesite='Strict'
+        )
+
+        response.set_cookie(
+            'refreshtoken',
+            jwt_tokens['refresh'],
+            max_age=86400, # 1 day
+            httponly=True,
+            samesite='Strict'
+        )
+
         return response

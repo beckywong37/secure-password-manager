@@ -7,9 +7,6 @@ Features:
 - Error message display
 - Switch to login form
 
-Note:
-- Have no backend API calls (UI only)
-
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
 and input field styling were generated with the help of ChatGPT-5. 
@@ -18,45 +15,88 @@ documents the GenAI Interaction that led to my code.
 */
 
 // Imports React and styles
-import { useState } from 'react';
-import styles from '../pages/Page.module.css';
+import { useState, useEffect } from "react";
+import styles from "../pages/Page.module.css";
+import { ensureCSRFToken, getCookie } from "../utils/cookies";
 
 interface RegistrationFormProps {
-    // onSwitchToLogin is a function from parent that switches view to login form
+  // onSwitchToLogin is a function from parent that switches view to login form
   onSwitchToLogin: () => void;
 }
 
-export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormProps) {
-    // State variables for form fields
-    // Functions to update the values
+export default function RegistrationForm({
+  onSwitchToLogin,
+}: RegistrationFormProps) {
+  // State variables for form fields
+  // Functions to update the values
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
 
+  // Ensure CSRF cookie exists after component is rendered
+  useEffect(() => {
+    ensureCSRFToken();
+  }, []);
+
   // Runs when user submits registration form
-  function submitRegistrationForm(e: React.FormEvent) {
+  async function submitRegistrationForm(e: React.FormEvent) {
     // Prevents page from reloading on submit
     e.preventDefault();
     setError("");
 
     // Check if passwords match, if not, set error message
-    if (password !== confirmPassword) {
+    if (password !== password2) {
       setError("Passwords do not match");
       return;
     }
 
     // Check if all fields are filled out, if not, set error message
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !password2) {
       setError("All fields must be filled out");
       return;
     }
 
-    // TODO: Backend integration API request will be added here
-    // For now, just log the input to the console
-    console.log("Registration form submitted:", { username, email, password });
+    try {
+      const csrfToken = getCookie("csrftoken");
+      if (!csrfToken) {
+        setError("Unable to retrieve CSRF token");
+        return;
+      }
 
+      const response = await fetch("/auth/api/register/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          password2,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Auth: MFA setup required:", data);
+        setUsername("");
+        setEmail("");
+      } else {
+        console.error("Auth: Error:", data);
+        setError("Authentication error");
+      }
+    } catch (err) {
+      console.error("Auth: Error", err);
+      setError("A network or server error occurred.");
+    } finally {
+      setPassword("");
+      setPassword2("");
+    }
   }
 
   // JSX to render Registration Form
@@ -64,16 +104,24 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     <>
       <div className={styles.formCard}>
         <h2>Create a New Account</h2>
-        <p style={{ fontSize: "1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
+        <p
+          style={{
+            fontSize: "1em",
+            color: "gray",
+            marginBottom: 30,
+            marginTop: 8,
+          }}
+        >
           To register provide the following information
         </p>
       </div>
 
-      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+      <form
+        onSubmit={submitRegistrationForm}
+        style={{ display: "flex", flexDirection: "column", gap: 15 }}
+      >
         <div>
-          <label className={styles.inputLabel}>
-            Username *
-          </label>
+          <label className={styles.inputLabel}>Username *</label>
           <input
             type="text"
             value={username}
@@ -84,9 +132,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Email *
-          </label>
+          <label className={styles.inputLabel}>Email *</label>
           <input
             type="email"
             value={email}
@@ -97,9 +143,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Password *
-          </label>
+          <label className={styles.inputLabel}>Password *</label>
           <input
             type="password"
             value={password}
@@ -110,21 +154,21 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Confirm Password *
-          </label>
+          <label className={styles.inputLabel}>Confirm Password *</label>
           <input
             type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={password2}
+            onChange={(e) => setPassword2(e.target.value)}
             className={styles.inputField}
             required
           />
         </div>
 
-        {/* Display error message if passwords do not match or not all fields filled out*/}
+        {/* Display error message */}
         {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>{error}</p>
+          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
+            {error}
+          </p>
         )}
 
         <button
@@ -136,7 +180,14 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </button>
       </form>
 
-      <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
+      <p
+        style={{
+          marginTop: 24,
+          textAlign: "center",
+          color: "gray",
+          fontSize: "0.95em",
+        }}
+      >
         Already have an account with us?{" "}
         <button
           onClick={onSwitchToLogin}
@@ -152,4 +203,3 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     </>
   );
 }
-

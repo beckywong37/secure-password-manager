@@ -16,7 +16,7 @@ documents the GenAI Interaction that led to my code.
 */
 
 // Imports React and styles
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styles from "../pages/Page.module.css";
 import { getCookie } from "../utils/cookies";
 

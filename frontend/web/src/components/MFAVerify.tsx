@@ -13,10 +13,6 @@ import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
 import { ensureCSRFToken, getCookie } from "../utils/cookies";
 
-interface MFAVerifyFormProps {
-  onReturnToVault: () => void;
-}
-
 export default function MFAVerifyForm() {
   const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");

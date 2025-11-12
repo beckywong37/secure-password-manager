@@ -35,7 +35,7 @@ export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
       }
 
       const response = await fetch("/auth/api/mfa-setup/", {
-        method: "GET",
+        method: "POST",
         credentials: "include",
         headers: {
           "X-CSRFToken": csrfToken,

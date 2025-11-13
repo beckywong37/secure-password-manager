@@ -23,6 +23,8 @@ from rest_framework import status, generics
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
@@ -285,7 +287,7 @@ class MFAVerifyView(generics.CreateAPIView):
         response.set_cookie(
             'accesstoken',
             jwt_tokens['access'],
-            max_age=900, # 15 minutes
+            max_age=900,  # 15 minutes
             httponly=True,
             samesite='Strict'
         )
@@ -293,7 +295,62 @@ class MFAVerifyView(generics.CreateAPIView):
         response.set_cookie(
             'refreshtoken',
             jwt_tokens['refresh'],
-            max_age=86400, # 1 day
+            max_age=86400,  # 1 day
+            httponly=True,
+            samesite='Strict'
+        )
+
+        return response
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class JWTTokenRefreshView(TokenRefreshView):
+    """
+    API endpoint for refreshing JWT tokens.
+
+    Extends SimpleJWT's TokenRefreshView to override POST method and set
+    refreshed tokens in HttpOnly cookies.
+
+    Permissions:
+        - AllowAny: Anyone can call the endpoint without authentication
+    """
+    serializer_class = TokenRefreshSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """
+        Refresh access token to authenticate user.
+
+        Raises:
+            serializers.ValidationError: If request is invalid.
+
+        Returns:
+            - Response:
+                - 200 OK: Token refresh successful
+                - 400 Bad Response: invalid request
+                Includes refresh and access token cookies
+        """
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except serializers.ValidationError as e:
+            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        response = Response(data, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            'accesstoken',
+            data['access'],
+            max_age=900,  # 15 minutes
+            httponly=True,
+            samesite='Strict'
+        )
+
+        response.set_cookie(
+            'refreshtoken',
+            data['refresh'],
+            max_age=86400,  # 1 day
             httponly=True,
             samesite='Strict'
         )

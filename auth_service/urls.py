@@ -6,14 +6,14 @@ user registration, login, MFA setup/verification, and token refresh/blacklisting
 """
 
 from django.urls import path
-from rest_framework_simplejwt.views import TokenBlacklistView
 from auth_service.views import (
     get_csrf_token,
     RegisterView,
     LoginView,
     MFASetupView,
     MFAVerifyView,
-    JWTTokenRefreshView
+    JWTTokenRefreshView,
+    LogoutView
 )
 
 app_name = 'auth_service'
@@ -25,5 +25,5 @@ urlpatterns = [
     path('mfa-setup/', MFASetupView.as_view(), name='mfa-setup-api'),
     path('mfa-verify/', MFAVerifyView.as_view(), name='mfa-verify-api'),
     path('token/', JWTTokenRefreshView.as_view(), name='token-api'),
-    path('logout/', TokenBlacklistView.as_view(), name='logout-api'),
+    path('logout/', LogoutView.as_view(), name='logout-api'),
 ]

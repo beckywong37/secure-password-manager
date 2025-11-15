@@ -20,13 +20,14 @@ References:
 
 from rest_framework import serializers
 from rest_framework import status, generics
+from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.views.decorators.http import require_GET
 from django.utils.decorators import method_decorator
@@ -40,14 +41,15 @@ User = get_user_model()
 # API Views
 @require_GET
 @ensure_csrf_cookie
-def get_csrf_token():
+def get_csrf_token(request):
     """
     API endpoing for CSRF initialization
 
     This endpoint should be called from React frontend before any POST requests
     to ensure the browser has a valid CSRF cookie set.
     """
-    return JsonResponse({"message": "CSRF cookie set"})
+    csrf_token = get_token(request)
+    return JsonResponse({"csrftoken": csrf_token})
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -304,17 +306,13 @@ class MFAVerifyView(generics.CreateAPIView):
 
 
 @method_decorator(csrf_protect, name='dispatch')
-class JWTTokenRefreshView(TokenRefreshView):
+class JWTTokenRefreshView(APIView):
     """
     API endpoint for refreshing JWT tokens.
-
-    Extends SimpleJWT's TokenRefreshView to override POST method and set
-    refreshed tokens in HttpOnly cookies.
 
     Permissions:
         - AllowAny: Anyone can call the endpoint without authentication
     """
-    serializer_class = TokenRefreshSerializer
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
@@ -330,29 +328,82 @@ class JWTTokenRefreshView(TokenRefreshView):
                 - 400 Bad Response: invalid request
                 Includes refresh and access token cookies
         """
-        serializer = self.get_serializer(data=request.data)
+        refresh_token = request.data.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            serializer.is_valid(raise_exception=True)
-        except serializers.ValidationError as e:
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            refresh = RefreshToken(refresh_token)
+            access = str(refresh.access_token)
 
-        data = serializer.validated_data
-        response = Response(data, status=status.HTTP_200_OK)
+            response = Response({"access": access, "refresh": str(refresh)}, status=status.HTTP_200_OK)
 
-        response.set_cookie(
-            'accesstoken',
-            data['access'],
-            max_age=900,  # 15 minutes
-            httponly=True,
-            samesite='Strict'
-        )
+            response.set_cookie(
+                'accesstoken',
+                access,
+                max_age=900,  # 15 minutes
+                httponly=True,
+                samesite='Strict'
+            )
 
-        response.set_cookie(
-            'refreshtoken',
-            data['refresh'],
-            max_age=86400,  # 1 day
-            httponly=True,
-            samesite='Strict'
-        )
+            response.set_cookie(
+                'refreshtoken',
+                str(refresh),
+                max_age=86400,  # 1 day
+                httponly=True,
+                samesite='Strict'
+            )
 
-        return response
+            return response
+
+        except TokenError as e:
+            return Response(
+                {
+                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
+                    "code": "token_not_valid"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
+@method_decorator(csrf_protect, name='dispatch')
+class LogoutView(APIView):
+    """
+    API endpoint for logging out user by blacklisting refresh token.
+
+    Permissions:
+        - AllowAny: Anyone can call the endpoint without authentication
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """
+        Blacklist refresh token to log out user.
+
+        Raises:
+            - serializers.ValidationError: If token is missing or invalid.
+
+        Returns:
+            - Response:
+                - 200 OK: Logout successful
+                - 400 Bad Request: missing token
+                - 401 Unauthorized: invalid or blacklisted token
+        """
+        refresh_token = request.data.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            refresh.blacklist()
+            return Response('', status.HTTP_200_OK)
+        except TokenError as e:
+            return Response(
+                {
+                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
+                    "code": "token_not_valid"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )

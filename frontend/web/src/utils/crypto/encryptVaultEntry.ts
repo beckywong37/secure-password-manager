@@ -15,7 +15,7 @@ import { toBytes, toHex } from "./helpers";
 export const encryptVaultEntry = async (vaultKey: Uint8Array | string, data: string | object): Promise<string> => {
     const key = await crypto.subtle.importKey(
         'raw',
-        toBytes(vaultKey),
+        toBytes(vaultKey).buffer as ArrayBuffer,
         'AES-GCM',
         false,
         ['encrypt', 'decrypt']
@@ -29,7 +29,7 @@ export const encryptVaultEntry = async (vaultKey: Uint8Array | string, data: str
             iv: nonce
         },
         key,
-        toBytes(data)
+        toBytes(data).buffer as ArrayBuffer
     );
 
     // Pack nonce and ciphertext together into single Uint8Array

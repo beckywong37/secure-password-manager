@@ -15,6 +15,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from 'react';
+import {Button} from './Button';
 import styles from '../pages/Page.module.css';
 
 // Props for the Password Generator component
@@ -128,12 +129,12 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
         </div>
 
         {/* Generate Password Button */}
-        <button
+        <Button
           onClick={hitGeneratePassword}
-          className={`${styles.button} ${styles.buttonPrimary}`}
+          variant="primary"
         >
           Generate Password
-        </button>
+        </Button>
 
         {/* Display error message if password generation fails */}
         {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}

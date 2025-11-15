@@ -3,19 +3,54 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Shared color variables */
+  --background-primary: rgb(17, 17, 83);
+  --background-secondary: white;
+  
+  /* Button semantic variables */
+  --button-primary-bg: #007bff;
+  --button-primary-bg-hover: darkblue;
+  --button-primary-text: white;
+  --button-secondary-bg: transparent;
+  --button-secondary-border: #d1d1d1;
+  --button-secondary-text: #666666;
+  --button-secondary-hover-bg: #f5f5f5;
+  --button-tertiary-bg: transparent;
+  --button-tertiary-border: #007bff;
+  --button-tertiary-text: #007bff;
+  --button-tertiary-hover-bg: #007bff;
+  --button-tertiary-hover-text: white;
+  --button-danger-bg: #dc3545;
+  --button-danger-bg-hover: #c82333;
+  --button-danger-text: white;
+  --button-disabled-opacity: 0.6;
+  
+  /* Vault UI colors */
+  --card-background: #ffffff;
+  --card-border: #e0e0e0;
+  --card-hover: #f5f5f5;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --input-border: #d1d1d1;
+  --input-focus: #007bff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: #747bff;
   text-decoration: inherit;
 }
 a:hover {
@@ -42,7 +77,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #f9f9f9;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -52,17 +87,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

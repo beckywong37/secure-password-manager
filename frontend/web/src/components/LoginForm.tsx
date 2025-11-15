@@ -18,6 +18,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from 'react';
+import {Button} from './Button';
 import styles from '../pages/Page.module.css';
 
 interface LoginFormProps {
@@ -79,26 +80,25 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         </div>
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
+        <Button type="submit" variant="primary">
           Login
-        </button>
+        </Button>
       </form>
 
       <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
         Create an account here{" "}
-        <button
+        <Button
           onClick={onSwitchToRegister}
+          variant="tertiary"
           style={{
-            color: "#007bff",
-            cursor: "pointer",
             textDecoration: "underline",
+            padding: "0",
+            fontSize: "inherit",
+            fontWeight: "normal",
           }}
         >
           Register New Account
-        </button>
+        </Button>
       </p>
     </>
   );

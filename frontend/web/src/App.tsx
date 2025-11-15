@@ -14,6 +14,8 @@ Features:
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import GeneratorPage from './pages/Generator';
 import LoginPage from './pages/Login';
+import { VaultPage } from './pages/Vault';
+import './index.css';
 
 export default function App() {
   return (
@@ -27,7 +29,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/generator" element={<GeneratorPage />} />
-          <Route path="/vault" element={<div>Vault Page Under Construction - Coming Soon!</div>} />
+          <Route path="/vault" element={<VaultPage />} />
         </Routes>
       </div>
     </BrowserRouter>

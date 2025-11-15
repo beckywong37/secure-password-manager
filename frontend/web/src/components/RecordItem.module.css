@@ -1,0 +1,36 @@
+.recordItem {
+    background-color: var(--card-background);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.recordItem:hover {
+    background-color: var(--card-hover);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--input-focus);
+}
+
+.recordItem h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.recordItem p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.recordItem button {
+    white-space: nowrap;
+}

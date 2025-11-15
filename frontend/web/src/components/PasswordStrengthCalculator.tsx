@@ -15,6 +15,7 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState, useEffect } from 'react';
+import {Button} from './Button';
 import styles from '../pages/Page.module.css';
 
 // Data returned by Password Strength Calculator
@@ -111,13 +112,13 @@ export default function PasswordStrengthCalculator({
         />
         {/* Check Strength Button */}
         {/* If password is empty, disable button */}
-        <button
+        <Button
           onClick={() => checkPasswordStrength(checkPassword)}
           disabled={isCheckingStrength || !checkPassword}
-          className={`${styles.button} ${styles.buttonSecondary}`}
+          variant="primary"
         >
           {isCheckingStrength ? "Checking..." : "Check Strength"}
-        </button>
+        </Button>
       </div>
 
       {/* Display error message if password strength check fails */}

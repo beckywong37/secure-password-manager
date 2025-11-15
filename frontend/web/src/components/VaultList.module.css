@@ -1,0 +1,9 @@
+.vaultList {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.vaultList > button {
+    margin-bottom: 20px;
+}

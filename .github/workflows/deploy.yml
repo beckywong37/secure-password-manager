@@ -104,13 +104,13 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend/web/pnpm-lock.yaml'
 
-      - name: Install frontend dependencies
-        working-directory: frontend/web
+      - name: Install frontend deps
+        working-directory: ./frontend/web
         run: pnpm install
 
       - name: Build frontend
-        working-directory: frontend/web
-        run: pnpm build
+        working-directory: ./frontend/web
+        run: pnpm run build
 
       - name: Collect static
         run: python manage.py collectstatic --noinput

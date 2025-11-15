@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from hello import views
+from .views import FrontendIndexView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -9,7 +9,7 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.home, name="home"),
+    path("", FrontendIndexView.as_view(), name="index"),
     path("auth/", include("auth_service.urls")),
     path("generator/", include("generator.urls")),
     path("vault/", include("vault.urls")),

@@ -111,6 +111,16 @@ class TokenTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data, {"detail": "Token is invalid", "code": "token_not_valid"})
 
+    def test_refresh_token_missing_token(self):
+        """
+        Ensure error response for missing refresh token
+        """
+        url = reverse('auth_service:token-api')
+        data = {}
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {"error": "Missing refresh token"})
+
     def test_logout_refresh_token_blacklisted_token(self):
         # Use refresh token to logout (blacklists token)
         url = reverse('auth_service:logout-api')

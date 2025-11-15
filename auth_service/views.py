@@ -331,7 +331,7 @@ class JWTTokenRefreshView(APIView):
         refresh_token = request.data.get('refresh')
 
         if not refresh_token:
-            return Response({"error": "missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)

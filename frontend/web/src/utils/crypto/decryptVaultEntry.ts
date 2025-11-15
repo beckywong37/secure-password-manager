@@ -14,7 +14,7 @@ import { toBytes } from "./helpers";
 export const decryptVaultEntry = async (vaultKey: Uint8Array | string, data: Uint8Array | string): Promise<string> => {
     const key = await crypto.subtle.importKey(
         'raw',
-        toBytes(vaultKey),
+        toBytes(vaultKey).buffer as ArrayBuffer,
         'AES-GCM',
         false,
         ['encrypt', 'decrypt']
@@ -33,7 +33,7 @@ export const decryptVaultEntry = async (vaultKey: Uint8Array | string, data: Uin
             iv: nonce
         },
         key,
-        ciphertext
+        ciphertext.buffer as ArrayBuffer
     );
 
     return new TextDecoder().decode(decrypted);

@@ -20,12 +20,16 @@ References:
 
 from rest_framework import serializers
 from rest_framework import status, generics
+from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
-from django.views.generic import TemplateView
-from django.views.decorators.csrf import csrf_protect
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
@@ -35,6 +39,19 @@ User = get_user_model()
 
 
 # API Views
+@require_GET
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    """
+    API endpoing for CSRF initialization
+
+    This endpoint should be called from React frontend before any POST requests
+    to ensure the browser has a valid CSRF cookie set.
+    """
+    csrf_token = get_token(request)
+    return JsonResponse({"csrftoken": csrf_token})
+
+
 @method_decorator(csrf_protect, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     """
@@ -179,7 +196,7 @@ class MFASetupView(generics.CreateAPIView):
     serializer_class = MFASetupSerializer
     permission_classes = [AllowAny]
 
-    def get(self, request: Request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs):
         """
         Validate MFA setup token, create TOTP device, and return QR code.
 
@@ -269,28 +286,124 @@ class MFAVerifyView(generics.CreateAPIView):
         response.delete_cookie('mfa-setup-token')
         response.delete_cookie('mfa-verify-token')
 
+        response.set_cookie(
+            'accesstoken',
+            jwt_tokens['access'],
+            max_age=900,  # 15 minutes
+            httponly=True,
+            samesite='Strict'
+        )
+
+        response.set_cookie(
+            'refreshtoken',
+            jwt_tokens['refresh'],
+            max_age=86400,  # 1 day
+            httponly=True,
+            samesite='Strict'
+        )
+
         return response
 
 
-# Template Views
-# TODO:
-# Similar to comment in urls.py. These are to support the current auth_service templates that were created primarily
-# for local testing. Once the frontend integration is complete, these can be removed.
-class RegisterPageView(TemplateView):
-    """Render registration page for local UI testing."""
-    template_name = 'auth_service/register.html'
+@method_decorator(csrf_protect, name='dispatch')
+class JWTTokenRefreshView(APIView):
+    """
+    API endpoint for refreshing JWT tokens.
+
+    Permissions:
+        - AllowAny: Anyone can call the endpoint without authentication
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        """
+        Refresh access token to authenticate user.
+
+        Raises:
+            serializers.ValidationError: If request is invalid.
+
+        Returns:
+            - Response:
+                - 200 OK: Token refresh successful
+                - 400 Bad Response: invalid request
+                Includes refresh and access token cookies
+        """
+        refresh_token = request.data.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access = str(refresh.access_token)
+
+            response = Response({"access": access, "refresh": str(refresh)}, status=status.HTTP_200_OK)
+
+            response.set_cookie(
+                'accesstoken',
+                access,
+                max_age=900,  # 15 minutes
+                httponly=True,
+                samesite='Strict'
+            )
+
+            response.set_cookie(
+                'refreshtoken',
+                str(refresh),
+                max_age=86400,  # 1 day
+                httponly=True,
+                samesite='Strict'
+            )
+
+            return response
+
+        except TokenError as e:
+            return Response(
+                {
+                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
+                    "code": "token_not_valid"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 
-class LoginPageView(TemplateView):
-    """Render login page for local UI testing."""
-    template_name = 'auth_service/login.html'
+@method_decorator(csrf_protect, name='dispatch')
+class LogoutView(APIView):
+    """
+    API endpoint for logging out user by blacklisting refresh token.
 
+    Permissions:
+        - AllowAny: Anyone can call the endpoint without authentication
+    """
+    permission_classes = [AllowAny]
 
-class MFASetupPageView(TemplateView):
-    """Render MFA setup page for local UI testing."""
-    template_name = 'auth_service/mfa_setup.html'
+    def post(self, request: Request) -> Response:
+        """
+        Blacklist refresh token to log out user.
 
+        Raises:
+            - serializers.ValidationError: If token is missing or invalid.
 
-class MFAVerifyPageView(TemplateView):
-    """Render MFA verification page for local UI testing."""
-    template_name = 'auth_service/mfa_verify.html'
+        Returns:
+            - Response:
+                - 200 OK: Logout successful
+                - 400 Bad Request: missing token
+                - 401 Unauthorized: invalid or blacklisted token
+        """
+        refresh_token = request.data.get('refresh')
+
+        if not refresh_token:
+            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            refresh.blacklist()
+            return Response('', status.HTTP_200_OK)
+        except TokenError as e:
+            return Response(
+                {
+                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
+                    "code": "token_not_valid"
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )

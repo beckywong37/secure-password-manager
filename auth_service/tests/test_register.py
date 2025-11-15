@@ -22,6 +22,11 @@ class RegisterTests(APITestCase):
         """
         Runs before every test to register a user in the db
         """
+        # Get csrf token
+        csrf_response = self.client.get(reverse('auth_service:csrf-token-api'))
+        csrf = csrf_response.cookies.get('csrftoken').value
+        self.client.cookies['csrftoken'] = csrf
+
         self.username = 'bcurley'
         self.email = 'curleyr@oregonstate.edu'
         self.password = 'ThisIsMyStrongPassword123'
@@ -33,7 +38,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        self.client.post(url, data, format='json')
+        self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
 
     def tearDown(self):
         """
@@ -69,7 +74,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('username', response.data)
         self.assertIn('email', response.data)
@@ -92,7 +97,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
 
@@ -113,7 +118,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password2
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
 
@@ -131,7 +136,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
         self.assertIn('username', response.data['error'])
@@ -149,7 +154,7 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertIn('error', response.data)
         self.assertIn('email', response.data['error'])
 
@@ -167,7 +172,7 @@ class RegisterTests(APITestCase):
             "email": self.email,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertIn('error', response.data)
         self.assertIn('password', response.data['error'])
 
@@ -185,7 +190,7 @@ class RegisterTests(APITestCase):
             "email": self.email,
             "password": self.password,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertIn('error', response.data)
         self.assertIn('password2', response.data['error'])
 
@@ -204,6 +209,6 @@ class RegisterTests(APITestCase):
             "password": self.password,
             "password2": self.password
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertIn('error', response.data)
         self.assertIn('email', response.data['error'])

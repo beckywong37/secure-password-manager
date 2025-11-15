@@ -12,10 +12,18 @@ Features:
 */
 
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { useEffect } from "react";
+import { ensureCSRFToken } from "./utils/cookies";
 import GeneratorPage from './pages/Generator';
 import LoginPage from './pages/Login';
 
 export default function App() {
+
+  // Ensure CSRF cookie exists once app starts
+  useEffect(() => {
+    ensureCSRFToken();
+  }, []);
+
   return (
     <BrowserRouter>
       <div style={{ maxWidth: 900, margin: '20px auto', padding: 16, fontFamily: "sans-serif" }}>
@@ -25,6 +33,7 @@ export default function App() {
           <Link to="/vault">Vault Page</Link>
         </nav>
         <Routes>
+          <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/generator" element={<GeneratorPage />} />
           <Route path="/vault" element={<div>Vault Page Under Construction - Coming Soon!</div>} />

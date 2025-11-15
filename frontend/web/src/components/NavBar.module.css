@@ -1,0 +1,29 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--card-background);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--card-border);
+}
+
+.navLinks {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+}
+
+.navLink {
+    color: var(--button-primary-bg);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.navLink:hover {
+    opacity: 0.8;
+}
+

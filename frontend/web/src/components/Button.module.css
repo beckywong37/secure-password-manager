@@ -61,3 +61,23 @@
   background-color: var(--button-danger-bg-hover);
 }
 
+/* Link button - appears as inline text link */
+.link {
+  background-color: transparent;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: normal;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+.link:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+/* Fluid button - full width */
+.fluid {
+  width: 100%;
+}

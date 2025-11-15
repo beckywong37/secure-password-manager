@@ -20,6 +20,8 @@ documents the GenAI Interaction that led to my code.
 // Imports React and styles
 import { useState } from 'react';
 import {Button} from './Button';
+import {Input} from './Input';
+import {Spacer} from './Spacer';
 import styles from '../pages/Page.module.css';
 
 interface RegistrationFormProps {
@@ -34,23 +36,36 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    general?: string;
+  }>({});
 
   // Runs when user submits registration form
   function submitRegistrationForm(e: React.FormEvent) {
     // Prevents page from reloading on submit
     e.preventDefault();
-    setError("");
+    setErrors({});
 
-    // Check if passwords match, if not, set error message
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+    const newErrors: typeof errors = {};
+
+    // Check if all fields are filled out
+    if (!username) newErrors.username = "Username is required";
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password";
+
+    // Check if passwords match
+    if (password && confirmPassword && password !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
-    // Check if all fields are filled out, if not, set error message
-    if (!username || !email || !password) {
-      setError("All fields must be filled out");
+    // If there are any errors, set them and return
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -65,93 +80,86 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     <>
       <div className={styles.formCard}>
         <h2>Create a New Account</h2>
-        <p style={{ fontSize: "1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
-          To register provide the following information
-        </p>
+        <Spacer marginTop="sm" marginBottom="xl">
+          <p style={{ fontSize: "1em", color: "gray" }}>
+            To register provide the following information
+          </p>
+        </Spacer>
       </div>
 
-      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-        <div>
-          <label className={styles.inputLabel}>
-            Username *
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
+      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column" }}>
+        <Input
+          label="Username *"
+          type="text"
+          value={username}
+          onChange={(e) => {
+            setUsername(e.target.value);
+            if (errors.username) setErrors({ ...errors, username: undefined });
+          }}
+          error={errors.username}
+          required
+        />
+        <Input
+          label="Email *"
+          type="email"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (errors.email) setErrors({ ...errors, email: undefined });
+          }}
+          error={errors.email}
+          required
+        />
+        <Input
+          label="Password *"
+          type="password"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (errors.password) setErrors({ ...errors, password: undefined });
+          }}
+          error={errors.password}
+          required
+        />
+        <Input
+          label="Confirm Password *"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => {
+            setConfirmPassword(e.target.value);
+            if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+          }}
+          error={errors.confirmPassword}
+          required
+        />
 
-        <div>
-          <label className={styles.inputLabel}>
-            Email *
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
-
-        <div>
-          <label className={styles.inputLabel}>
-            Password *
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
-
-        <div>
-          <label className={styles.inputLabel}>
-            Confirm Password *
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
-
-        {/* Display error message if passwords do not match or not all fields filled out*/}
-        {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>{error}</p>
+        {/* Display general error message if needed */}
+        {errors.general && (
+          <p style={{ color: "var(--color-error)", fontSize: "0.9em" }}>{errors.general}</p>
         )}
 
-        <Button
-          type="submit"
-          variant="primary"
-          style={{ marginTop: 10, width: "100%" }}
-        >
-          Register
-        </Button>
+        <Spacer marginTop="sm">
+          <Button
+            type="submit"
+            variant="primary"
+            fluid
+          >
+            Register
+          </Button>
+        </Spacer>
       </form>
 
-      <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
-        Already have an account with us?{" "}
-        <Button
-          onClick={onSwitchToLogin}
-          variant="tertiary"
-          style={{
-            textDecoration: "underline",
-            padding: "0",
-            fontSize: "inherit",
-            fontWeight: "normal",
-          }}
-        >
-          Login here
-        </Button>
-      </p>
+      <Spacer marginTop="lg">
+        <p style={{ textAlign: "center", color: "gray", fontSize: "0.95em" }}>
+          Already have an account with us?{" "}
+          <Button
+            onClick={onSwitchToLogin}
+            variant="link"
+          >
+            Login here
+          </Button>
+        </p>
+      </Spacer>
     </>
   );
 }

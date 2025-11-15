@@ -15,7 +15,11 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import {Button} from './Button';
+import {Input} from './Input';
+import {Spacer} from './Spacer';
 import styles from '../pages/Page.module.css';
 
 // Data returned by Password Strength Calculator
@@ -101,15 +105,19 @@ export default function PasswordStrengthCalculator({
         Check the strength of any password
       </p>
       {/* Input field for password to check */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-        <input
-          type="text"
-          value={checkPassword}
-          onChange={(e) => setCheckPassword(e.target.value)}
-          placeholder="Enter password to check strength"
-          style={{flex: 1, padding: 8, border: "1.2px solid lightgray",
-          }}
-        />
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <Input
+            type="text"
+            value={checkPassword}
+            onChange={(e) => {
+              setCheckPassword(e.target.value);
+              if (strengthError) setStrengthError("");
+            }}
+            placeholder="Enter password to check strength"
+            error={strengthError}
+          />
+        </div>
         {/* Check Strength Button */}
         {/* If password is empty, disable button */}
         <Button
@@ -120,11 +128,6 @@ export default function PasswordStrengthCalculator({
           {isCheckingStrength ? "Checking..." : "Check Strength"}
         </Button>
       </div>
-
-      {/* Display error message if password strength check fails */}
-      {strengthError && (
-        <p style={{ color: "red", fontSize: "0.9em", marginTop: 10 }}>{strengthError}</p>
-      )}
 
       {/* Display strength data container*/}
       {strengthData && (
@@ -181,9 +184,11 @@ export default function PasswordStrengthCalculator({
 
           {/* If backend sends no suggestions, display strong password message */}
           {strengthData.notes && strengthData.notes.length === 0 && (
-            <p style={{ color: "green", fontSize: "0.9em", marginTop: 8 }}>
-              ✓ This is a secure and strong password!
-            </p>
+            <Spacer marginTop="sm">
+              <p style={{ color: "var(--color-success)", fontSize: "0.9em" }}>
+                <FontAwesomeIcon icon={faCheck} /> This is a secure and strong password!
+              </p>
+            </Spacer>
           )}
         </div>
       )}

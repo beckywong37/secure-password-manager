@@ -7,10 +7,10 @@ To start the Vite dev server, run: 'npm run dev' in the frontend/web directory.
 
 import { useState } from 'react';
 import type { Record } from '../types/Record';
-import styles from './Page.module.css';
-import loginLogo from '../assets/LoginLogo.jpeg';
+import styles from './Vault.module.css';
 import { VaultList } from '../components/VaultList';
 import { RecordForm } from '../components/RecordForm';
+import { RecordDetails } from '../components/RecordDetails';
 
 
 // TODO: Hard coded data for now, will be replaced with API data later
@@ -87,6 +87,7 @@ export const VaultPage = () => {
     const [records, setRecords] = useState<Record[]>(dummyRecords);
 
     const [editingRecord, setEditingRecord] = useState<Record | null | undefined>(undefined);
+    const [selectedRecord, setSelectedRecord] = useState<Record | null >(null);
 
     const handleRecordSubmit = (record: Record) => {
         if (editingRecord) {
@@ -105,15 +106,53 @@ export const VaultPage = () => {
         setEditingRecord(record);
     }
 
+    const onSelectRecord = (record: Record) => {
+        setSelectedRecord(record);
+    }
+
     const onCancel = () => {
         setEditingRecord(undefined);
     }
-        return (
-        <div className={styles.pageContainer}>
-            <div className={styles.contentContainer}>
+
+    const onCloseDetails = () => {
+        setSelectedRecord(null);
+    }
+
+    const onDeleteRecord = (record: Record) => {
+        setRecords(records.filter(r => r.id !== record.id));
+        setSelectedRecord(null);
+    }
+    
+    return (
+        <div className={styles.vaultContainer}>
+            <div className={styles.vaultContent}>
                 <h1>Vault</h1>
-                    {editingRecord !== undefined && <RecordForm record={editingRecord} onSubmit={handleRecordSubmit} onCancel={onCancel} />}
-                    <VaultList records={records} onAddRecord={onAddRecord} onEditRecord={onEditRecord} />
+                <div className={styles.vaultLayout}>
+                    <div className={styles.leftColumn}>
+                        <VaultList 
+                            records={records} 
+                            onAddRecord={onAddRecord} 
+                            onEditRecord={onEditRecord} 
+                            onSelectRecord={onSelectRecord}
+                        />
+                    </div>
+                    <div className={styles.rightColumn}>
+                        {editingRecord !== undefined && (
+                            <RecordForm 
+                                record={editingRecord} 
+                                onSubmit={handleRecordSubmit} 
+                                onCancel={onCancel} 
+                            />
+                        )}
+                        {selectedRecord && editingRecord === undefined && (
+                            <RecordDetails 
+                                record={selectedRecord} 
+                                onClose={onCloseDetails}
+                                onDelete={onDeleteRecord}
+                            />
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     )

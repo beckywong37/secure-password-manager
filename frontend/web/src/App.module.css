@@ -1,0 +1,6 @@
+.appContainer {
+  max-width: 1440px;
+  margin: 0 auto;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+

@@ -16,6 +16,7 @@ documents the GenAI Interaction that led to my code.
 // Imports React and styles
 import { useState } from 'react';
 import {Button} from './Button';
+import {Spacer} from './Spacer';
 import styles from '../pages/Page.module.css';
 
 // Props for the Password Generator component
@@ -34,17 +35,19 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
   const [numbers, setNumbers] = useState(true);
   const [special, setSpecial] = useState(false);
   const [error, setError] = useState("");
+  const [checkboxError, setCheckboxError] = useState("");
 
   // Runs when user clicks the "Generate Password" button
   async function hitGeneratePassword() {
     // Clear previous error before generating new password
     setError("");
+    setCheckboxError("");
     onError("");
 
     // Error message if no options selected
     if (!uppercase && !lowercase && !numbers && !special) {
       const errorMsg = "Please select at least one character type";
-      setError(errorMsg);
+      setCheckboxError(errorMsg);
       return;
     }
 
@@ -95,37 +98,58 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
         </label>
 
         {/* Create 2 columns for the checkboxes */}
-        <div
-        style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: 10,
-        }}
-        >
-          {/*Uppercase Checkbox */}
-        <label>
-          <input
-            type="checkbox"checked={uppercase} onChange={() => setUppercase(!uppercase)}
-          /> Uppercase
-        </label>
+        <div>
+          <div
+          style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: 10,
+          }}
+          >
+            {/*Uppercase Checkbox */}
+          <label>
+            <input
+              type="checkbox"checked={uppercase} onChange={() => {
+                setUppercase(!uppercase);
+                if (checkboxError) setCheckboxError("");
+              }}
+            /> Uppercase
+          </label>
 
-        {/* Lowercase Checkbox */}
-        <label>
-          <input
-            type="checkbox" checked={lowercase} onChange={() => setLowercase(!lowercase)}
-          /> Lowercase
-        </label>
+          {/* Lowercase Checkbox */}
+          <label>
+            <input
+              type="checkbox" checked={lowercase} onChange={() => {
+                setLowercase(!lowercase);
+                if (checkboxError) setCheckboxError("");
+              }}
+            /> Lowercase
+          </label>
 
-        {/* Numbers Checkbox */}
-        <label>
-          <input
-            type="checkbox"checked={numbers} onChange={() => setNumbers(!numbers)}
-          /> Numbers
-        </label>
+          {/* Numbers Checkbox */}
+          <label>
+            <input
+              type="checkbox"checked={numbers} onChange={() => {
+                setNumbers(!numbers);
+                if (checkboxError) setCheckboxError("");
+              }}
+            /> Numbers
+          </label>
 
-        {/* Special Characters Checkbox */}
-        <label>
-          <input
-            type="checkbox" checked={special} onChange={() => setSpecial(!special)}
-          /> Special Characters
-        </label>
+          {/* Special Characters Checkbox */}
+          <label>
+            <input
+              type="checkbox" checked={special} onChange={() => {
+                setSpecial(!special);
+                if (checkboxError) setCheckboxError("");
+              }}
+            /> Special Characters
+          </label>
+          </div>
+          {checkboxError && (
+            <Spacer marginTop="sm">
+              <div style={{ fontSize: "13px", color: "var(--color-error)" }}>
+                {checkboxError}
+              </div>
+            </Spacer>
+          )}
         </div>
 
         {/* Generate Password Button */}
@@ -137,7 +161,11 @@ export default function Generator({ onPasswordGenerated, onError }: GeneratorPro
         </Button>
 
         {/* Display error message if password generation fails */}
-        {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}
+        {error && (
+          <Spacer marginTop="sm">
+            <p style={{ color: "var(--color-error)" }}>{error}</p>
+          </Spacer>
+        )}
       </div>
     </div>
   );

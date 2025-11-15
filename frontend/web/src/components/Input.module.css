@@ -1,0 +1,87 @@
+.inputWrapper {
+    margin-bottom: 16px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.inputContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--input-border, lightgray);
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background-color: var(--card-background, white);
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+    outline: none;
+    border-color: var(--input-focus, #345b84);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.input:read-only {
+    background-color: var(--background-secondary, #f5f5f5);
+    cursor: default;
+}
+
+.input:read-only:focus {
+    border-color: var(--input-border, lightgray);
+    box-shadow: none;
+}
+
+.textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.rightAdornment {
+    position: absolute;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.inputContainer:has(.rightAdornment) .input {
+    padding-right: 80px;
+}
+
+.inputError {
+    border-color: var(--color-error) !important;
+}
+
+.inputError:focus {
+    border-color: var(--color-error) !important;
+    box-shadow: 0 0 0 3px var(--color-error-alpha) !important;
+}
+
+.errorMessage {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--color-error);
+}
+
+.helperText {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+

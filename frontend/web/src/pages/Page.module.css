@@ -2,12 +2,7 @@
 
 /* Defines CSS properties for the page container */
 .pageContainer {
-  background-color: var(--background-primary);
   min-height: 100vh;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   padding: 20px 0 30px 0;
   box-sizing: border-box;
 }

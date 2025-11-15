@@ -46,6 +46,25 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* State colors */
+  --color-error: #dc3545;
+  --color-error-alpha: rgba(220, 53, 69, 0.1);
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-info: #17a2b8;
+  
+  /* Interactive state backgrounds */
+  --background-hover: #f0f0f0;
+  --background-active: #e0e0e0;
+  
+  /* Spacing scale (t-shirt sizes) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
 }
 
 a {
@@ -59,10 +78,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--background-primary);
 }
 
 h1 {

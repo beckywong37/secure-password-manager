@@ -7,38 +7,13 @@
     box-shadow: var(--shadow-md);
 }
 
-.recordForm label {
-    display: block;
-    margin-bottom: 16px;
-    font-size: 14px;
+.recordForm h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
     font-weight: 600;
     color: var(--text-primary);
-}
-
-.recordForm input,
-.recordForm textarea {
-    width: 100%;
-    padding: 10px 12px;
-    margin-top: 6px;
-    border: 1px solid var(--input-border);
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text-primary);
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.recordForm input:focus,
-.recordForm textarea:focus {
-    outline: none;
-    border-color: var(--input-focus);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.recordForm textarea {
-    min-height: 80px;
-    resize: vertical;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 12px;
 }
 
 .buttonGroup {
@@ -47,3 +22,40 @@
     margin-top: 8px;
 }
 
+.dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.dialogContent {
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.2s ease-out;
+}
+
+.dialogContent .recordForm {
+    margin-bottom: 0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

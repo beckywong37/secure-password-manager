@@ -20,35 +20,12 @@ import { useState } from "react";
 import styles from "./Page.module.css";
 import LoginForm from "../components/LoginForm";
 import RegistrationForm from "../components/RegistrationForm";
-import MFASetup from "../components/MFASetup";
-import MFAVerify from "../components/MFAVerify";
 import loginLogo from "../assets/LoginLogo.jpeg";
 
 export default function LoginPage() {
   // mode is a string that can be either 'login' or 'register', 'login' is default
   // setMode is a function used to update the mode
-  const [mode, setMode] = useState<
-    "login" | "register" | "mfa-setup" | "mfa-verify"
-  >("login");
-
-  // forms[login] renders LoginForm, forms[register] renders RegistrationForm
-  const forms = {
-    login: (
-      <LoginForm
-        onSwitchToRegister={() => setMode("register")}
-        onShowMFASetup={() => setMode("mfa-setup")}
-        onShowMFAVerify={() => setMode("mfa-verify")}
-      />
-    ),
-    register: (
-      <RegistrationForm
-        onSwitchToLogin={() => setMode("login")}
-        onShowMFASetup={() => setMode("mfa-setup")}
-      />
-    ),
-    "mfa-setup": <MFASetup onShowMFAVerify={() => setMode("mfa-verify")} />,
-    "mfa-verify": <MFAVerify onReturnToVault={() => setMode("login")} />,
-  };
+  const [mode, setMode] = useState<"login" | "register">("login");
 
   return (
     // Use styles for page container and content container (Page.module.css)
@@ -66,8 +43,19 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Renders either LoginForm or RegistrationForm based on the mode */}
-        {forms[mode]}
+        {/* LoginForm */}
+        {
+          mode === 'login' && <LoginForm
+            onSwitchToRegister={() => setMode("register")}
+          />
+        }
+
+        {/* RegistrationForm */}
+        {
+          mode === "register" && <RegistrationForm
+            onSwitchToLogin={() => setMode("login")}
+          />
+        }
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ Features:
 - Login button
 - Error message display
 - Switch to registration form
-- Proceed to MFA setup or verification
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -17,26 +16,22 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { getCookie } from "../utils/cookies";
+import { apiRequest } from "../utils/http/apiRequest";
 
 interface LoginFormProps {
   // onSwitchToRegister is a function from parent that switches view to registration form
   onSwitchToRegister: () => void;
-  onShowMFASetup: () => void;
-  onShowMFAVerify: () => void;
 }
 
-export default function LoginForm({
-  onSwitchToRegister,
-  onShowMFASetup,
-  onShowMFAVerify,
-}: LoginFormProps) {
+export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
   // username and password variables store the user's input
   // setUsername and setPassword are functions that update the values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Runs when user submits login form
   async function submitLoginForm(e: React.FormEvent) {
@@ -51,42 +46,19 @@ export default function LoginForm({
     }
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      if (!csrfToken) {
-        setError("Unable to retrieve CSRF token");
-        return;
-      }
-
-      const response = await fetch("/api/auth/login/", {
+      await apiRequest("/api/auth/login/", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+        body: {username, password},
+        suppressErrors: true,  // allows 403 for when mfa setup is required
       });
 
-      const data = await response.json();
+      // Force SessionManager to run and redirect
+      navigate("/login?refresh", { replace: true });
+      return;
 
-      if (response.ok && data.is_mfa_setup) {
-        console.log("Auth: MFA verification required:", data);
-        onShowMFAVerify();
-        setUsername("");
-      } else if (response.status === 403 && !data.is_mfa_setup) {
-        console.log("Auth: MFA setup required:", data);
-        onShowMFASetup();
-        setUsername("");
-      } else {
-        console.error("Auth: Error:", data);
-        setError("Authentication error");
-      }
     } catch (err) {
-      console.error("Auth: Error", err);
-      setError("A network or server error occurred.");
+      setError("A network or server error occurred");
+    
     } finally {
       setPassword("");
     }
@@ -98,22 +70,12 @@ export default function LoginForm({
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Welcome Back to Secure Password Manager</h2>
-        <p
-          style={{
-            fontSize: "1.1em",
-            color: "gray",
-            marginBottom: 30,
-            marginTop: 8,
-          }}
-        >
+        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
           Sign in to your account
         </p>
       </div>
 
-      <form
-        onSubmit={submitLoginForm}
-        style={{ display: "flex", flexDirection: "column", gap: 15 }}
-      >
+      <form onSubmit={submitLoginForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         <div>
           <label className={styles.inputLabel}>Username *</label>
           <input
@@ -143,22 +105,12 @@ export default function LoginForm({
           </p>
         )}
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
+        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`}>
           Login
         </button>
       </form>
 
-      <p
-        style={{
-          marginTop: 24,
-          textAlign: "center",
-          color: "gray",
-          fontSize: "0.95em",
-        }}
-      >
+      <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
         Create an account here{" "}
         <button
           onClick={onSwitchToRegister}

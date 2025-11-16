@@ -9,16 +9,14 @@ Features:
 
 // Imports React and styles
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { getCookie } from "../utils/cookies";
+import { apiRequest } from "../utils/http/apiRequest";
 
-interface MFASetupFormProps {
-  onShowMFAVerify: () => void;
-}
-
-export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
+export default function MFASetupForm() {
   const [qrCode, setQrCode] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Fetch QR code after component is rendered
   useEffect(() => {
@@ -27,31 +25,21 @@ export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
 
   async function getQRCode() {
     try {
-      const csrfToken = getCookie("csrftoken");
-      if (!csrfToken) {
-        setError("Unable to retrieve CSRF token");
+      const response = await apiRequest("/api/auth/mfa-setup/", {
+        method: "POST",
+      });
+
+      if (response.qr_code) {
+        setQrCode(response.qr_code);
         return;
       }
 
-      const response = await fetch("/api/auth/mfa-setup/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": csrfToken,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.qr_code) {
-        setQrCode(data.qr_code);
-      } else {
-        console.error("MFA: Failed to load QR code: ", data);
-        setError("Failed to load MFA QR code");
-      }
-    } catch (err) {
-      console.error("MFA: Error fetching MFA QR code: ", err);
-      setError("A network or server error occurred.");
+      setError("Failed to load MFA QR code");
+      
+    } catch (err: any) {
+      // Return descriptive error response if available
+      const errorResponse = err?.data?.error?.mfa_token;
+      setError(errorResponse || "A network or server error occurred.");
     }
   }
 
@@ -61,26 +49,14 @@ export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Set Up Multi-Factor Authentication</h2>
-        <p
-          style={{
-            fontSize: "1.1em",
-            color: "gray",
-            marginBottom: 30,
-            marginTop: 8,
-          }}
-        >
-          Scan the QR code below using Google Authenticator or your favorite
-          authentication app.
+        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
+          Scan the QR code below using Google Authenticator or your favorite authentication app.
         </p>
       </div>
 
       <div style={{ textAlign: "center", marginBottom: 10 }}>
         {qrCode ? (
-          <img
-            src={qrCode}
-            alt="MFA Setup QR Code"
-            style={{ width: 200, height: 200 }}
-          />
+          <img src={qrCode} alt="MFA Setup QR Code" style={{ width: 200, height: 200 }} />
         ) : (
           <p style={{ color: "gray" }}>Loading QR code...</p>
         )}
@@ -94,10 +70,9 @@ export default function MFASetupForm({ onShowMFAVerify }: MFASetupFormProps) {
       </div>
 
       <button
-        type="submit"
         className={`${styles.button} ${styles.buttonPrimary}`}
-        style={{ textAlign: "center", width: "100%" }}
-        onClick={onShowMFAVerify}
+        style={{ width: "100%" }}
+        onClick={() => navigate("/mfa/verify")}
       >
         Continue to MFA Verification
       </button>

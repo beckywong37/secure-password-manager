@@ -11,7 +11,7 @@ Features:
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { getCookie } from "../utils/cookies";
+import { apiRequest } from "../utils/http/apiRequest";
 
 export default function MFAVerifyForm() {
   const [mfaCode, setMfaCode] = useState("");
@@ -29,34 +29,24 @@ export default function MFAVerifyForm() {
     }
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      if (!csrfToken) {
-        setError("Unable to retrieve CSRF token");
-        return;
-      }
-
-      const response = await fetch("/api/auth/mfa-verify/", {
+      await apiRequest("/api/auth/mfa-verify/", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({ mfa_code: mfaCode }),
+        body: { mfa_code: mfaCode },
       });
 
-      const data = await response.json();
+      // Force SessionManager to run and redirect to /vault
+      navigate("/mfa/verify?refresh", { replace: true });
+      return;
+  
+    } catch (err: any) {
+      // Return descriptive error response if available
+      const errorResponse = err?.data?.error;
+      const errorMessage = 
+        errorResponse?.mfa_code ||
+        errorResponse?.mfa_token ||
+        typeof errorResponse === "string" ? errorResponse : "Unable to verify MFA code";
 
-      if (response.ok) {
-        console.log("MFA: Success - MFA verified: ", data);
-        navigate("/vault"); // Redirect to vault page
-      } else {
-        console.error("MFA: Verification error: ", data);
-        setError("Failed to verify MFA code");
-      }
-    } catch (err) {
-      console.error("MFA: Verification error: ", err);
-      setError("A network or server error occurred.");
+      setError(errorMessage);
     } finally {
       setMfaCode("");
     }
@@ -68,22 +58,12 @@ export default function MFAVerifyForm() {
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Verify Your MFA Code</h2>
-        <p
-          style={{
-            fontSize: "1.1em",
-            color: "gray",
-            marginBottom: 30,
-            marginTop: 8,
-          }}
-        >
+        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
           Enter the 6-digit code from your authenticator app.
         </p>
       </div>
 
-      <form
-        onSubmit={submitMFAForm}
-        style={{ display: "flex", flexDirection: "column", gap: 15 }}
-      >
+      <form onSubmit={submitMFAForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         <div>
           <label className={styles.inputLabel}>6-Digit Code *</label>
           <input
@@ -103,10 +83,7 @@ export default function MFAVerifyForm() {
           </p>
         )}
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
+        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`}>
           Verify
         </button>
       </form>

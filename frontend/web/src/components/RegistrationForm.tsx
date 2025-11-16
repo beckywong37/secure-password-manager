@@ -17,19 +17,16 @@ documents the GenAI Interaction that led to my code.
 
 // Imports React and styles
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { getCookie } from "../utils/cookies";
+import { apiRequest } from "../utils/http/apiRequest";
 
 interface RegistrationFormProps {
   // onSwitchToLogin is a function from parent that switches view to login form
   onSwitchToLogin: () => void;
-  onShowMFASetup: () => void;
 }
 
-export default function RegistrationForm({
-  onSwitchToLogin,
-  onShowMFASetup,
-}: RegistrationFormProps) {
+export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormProps) {
   // State variables for form fields
   // Functions to update the values
   const [username, setUsername] = useState("");
@@ -37,6 +34,7 @@ export default function RegistrationForm({
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Runs when user submits registration form
   async function submitRegistrationForm(e: React.FormEvent) {
@@ -57,41 +55,26 @@ export default function RegistrationForm({
     }
 
     try {
-      const csrfToken = getCookie("csrftoken");
-      if (!csrfToken) {
-        setError("Unable to retrieve CSRF token");
-        return;
-      }
-
-      const response = await fetch("/auth/api/register/", {
+      await apiRequest("/api/auth/register/", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          password2,
-        }),
+        body: {username, email, password, password2},
       });
 
-      const data = await response.json();
+      // Force SessionManager to run and redirect to /mfa/setup
+      navigate("/login?refresh", { replace: true });
+      return;
 
-      if (response.ok) {
-        console.log("Auth: MFA setup required:", data);
-        onShowMFASetup();
-        setUsername("");
-        setEmail("");
-      } else {
-        console.error("Auth: Error:", data);
-        setError("Authentication error");
-      }
-    } catch (err) {
-      console.error("Auth: Error", err);
-      setError("A network or server error occurred.");
+    } catch (err: any) {
+      // Return descriptive error response if available
+      const errorResponse = err?.data;
+      const errorMessage = 
+        errorResponse.error?.username[0] ||
+        errorResponse.error?.email[0] ||
+        errorResponse.error.password[0] ||
+        errorResponse.error.non_field_errors[0] ||
+        "A network or server error occurred";
+
+      setError(errorMessage);    
     } finally {
       setPassword("");
       setPassword2("");
@@ -103,22 +86,12 @@ export default function RegistrationForm({
     <>
       <div className={styles.formCard}>
         <h2>Create a New Account</h2>
-        <p
-          style={{
-            fontSize: "1em",
-            color: "gray",
-            marginBottom: 30,
-            marginTop: 8,
-          }}
-        >
+        <p style={{ fontSize: "1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
           To register provide the following information
         </p>
       </div>
 
-      <form
-        onSubmit={submitRegistrationForm}
-        style={{ display: "flex", flexDirection: "column", gap: 15 }}
-      >
+      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }} >
         <div>
           <label className={styles.inputLabel}>Username *</label>
           <input
@@ -170,23 +143,12 @@ export default function RegistrationForm({
           </p>
         )}
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-          style={{ marginTop: 10, width: "100%" }}
-        >
+        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`} style={{ marginTop: 10, width: "100%" }}>
           Register
         </button>
       </form>
 
-      <p
-        style={{
-          marginTop: 24,
-          textAlign: "center",
-          color: "gray",
-          fontSize: "0.95em",
-        }}
-      >
+      <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
         Already have an account with us?{" "}
         <button
           onClick={onSwitchToLogin}

@@ -8,6 +8,7 @@ user registration, login, MFA setup/verification, and token refresh/blacklisting
 from django.urls import path
 from auth_service.views import (
     get_csrf_token,
+    get_auth_status,
     RegisterView,
     LoginView,
     MFASetupView,
@@ -20,6 +21,7 @@ app_name = 'auth_service'
 
 urlpatterns = [
     path('csrf/', get_csrf_token, name='csrf-token-api'),
+    path('session/', get_auth_status, name='session-api'),
     path('register/', RegisterView.as_view(), name='register-api'),
     path('login/', LoginView.as_view(), name='login-api'),
     path('mfa-setup/', MFASetupView.as_view(), name='mfa-setup-api'),

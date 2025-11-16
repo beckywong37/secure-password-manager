@@ -24,7 +24,8 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken, TokenError
 from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -50,6 +51,66 @@ def get_csrf_token(request):
     """
     csrf_token = get_token(request)
     return JsonResponse({"csrftoken": csrf_token})
+
+
+@api_view(['GET'])
+def get_auth_status(request):
+    """
+    API endpoint for user sessions
+
+    Determines the user's session state based on HttpOnly cookies.
+    The frontend cannot read HttpOnly cookies, so this API supports
+    the frontend routing decisions.
+
+    Returns:
+        {
+            "is_authenticated": bool,
+            "has_refresh_token": bool,
+            "has_mfa_setup_token": bool,
+            "has_mfa_verify_token": bool
+        }
+    """
+    access_token = request.COOKIES.get('accesstoken')
+    refresh_token = request.COOKIES.get('refreshtoken')
+    mfa_setup_token = request.COOKIES.get('mfa-setup-token')
+    mfa_verify_token = request.COOKIES.get('mfa-verify-token')
+
+    auth_status = {
+        "is_authenticated": False,
+        "has_refresh_token": False,
+        "has_mfa_setup_token": False,
+        "has_mfa_verify_token": False,
+    }
+
+    # Check if valid JWT access token exists
+    if access_token:
+        try:
+            # Validate signature and expiration
+            AccessToken(access_token)
+            auth_status['is_authenticated'] = True
+        except TokenError:
+            # Token is invalid or expired
+            pass
+
+    # Check if valid JWT access token exists
+    elif refresh_token:
+        try:
+            # Validate signature and expiration
+            RefreshToken(refresh_token)
+            auth_status['has_refresh_token'] = True
+        except TokenError:
+            # Token is invalid or expired
+            pass
+
+    # Check if user is in MFA verification stage
+    elif mfa_verify_token:
+        auth_status['has_mfa_verify_token'] = True
+
+    # Check if user is in MFA setup stage
+    elif mfa_setup_token:
+        auth_status['has_mfa_setup_token'] = True
+
+    return Response(auth_status)
 
 
 @method_decorator(csrf_protect, name='dispatch')
@@ -328,7 +389,7 @@ class JWTTokenRefreshView(APIView):
                 - 400 Bad Response: invalid request
                 Includes refresh and access token cookies
         """
-        refresh_token = request.data.get('refresh')
+        refresh_token = request.COOKIES.get('refreshtoken') or request.data.get('refresh')
 
         if not refresh_token:
             return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
@@ -390,7 +451,7 @@ class LogoutView(APIView):
                 - 400 Bad Request: missing token
                 - 401 Unauthorized: invalid or blacklisted token
         """
-        refresh_token = request.data.get('refresh')
+        refresh_token = request.COOKIES.get('refreshtoken') or request.data.get('refresh')
 
         if not refresh_token:
             return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)

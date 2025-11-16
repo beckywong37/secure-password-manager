@@ -29,24 +29,38 @@ export default function MFAVerifyForm() {
     }
 
     try {
-      await apiRequest("/api/auth/mfa-verify/", {
+      const response = await apiRequest("/api/auth/mfa-verify/", {
         method: "POST",
         body: { mfa_code: mfaCode },
+        suppressErrors: true
       });
+
+      // Return descriptive error message if necessary
+      const status = response?.status ?? 200;
+      if (status !== 200) {
+        let errorResponse = response.data?.detail || response.data?.error || response.message;
+
+        if (typeof errorResponse === "object") {
+          const firstKey = Object.keys(errorResponse)[0];
+          const firstMessage = errorResponse[firstKey][0];
+          errorResponse = firstMessage;
+        }
+
+        if (!errorResponse) {
+          errorResponse = "MFA Verification failed";
+        }
+
+        setError(errorResponse);
+        return;
+      }
 
       // Force SessionManager to run and redirect to /vault
       navigate("/mfa/verify?refresh", { replace: true });
       return;
   
-    } catch (err: any) {
-      // Return descriptive error response if available
-      const errorResponse = err?.data?.error;
-      const errorMessage = 
-        errorResponse?.mfa_code ||
-        errorResponse?.mfa_token ||
-        typeof errorResponse === "string" ? errorResponse : "Unable to verify MFA code";
+    } catch {
+      setError("A network or server error occurred");
 
-      setError(errorMessage);
     } finally {
       setMfaCode("");
     }

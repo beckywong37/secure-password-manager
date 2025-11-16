@@ -66,15 +66,21 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
 
     } catch (err: any) {
       // Return descriptive error response if available
-      const errorResponse = err?.data;
-      const errorMessage = 
-        errorResponse.error?.username[0] ||
-        errorResponse.error?.email[0] ||
-        errorResponse.error.password[0] ||
-        errorResponse.error.non_field_errors[0] ||
-        "A network or server error occurred";
+      let errorResponse = err.data?.detail || err.data?.error || err.message;
 
-      setError(errorMessage);    
+      if (typeof errorResponse === "object") {
+        const firstKey = Object.keys(errorResponse)[0];
+        const firstMessage = errorResponse[firstKey][0];
+        errorResponse = firstMessage;
+      }
+
+      if (!errorResponse) {
+        errorResponse = "A network or server error occurred";
+      }
+
+      setError(errorResponse);
+      return;
+
     } finally {
       setPassword("");
       setPassword2("");

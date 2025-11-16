@@ -46,17 +46,36 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
     }
 
     try {
-      await apiRequest("/api/auth/login/", {
+      const response = await apiRequest("/api/auth/login/", {
         method: "POST",
         body: {username, password},
         suppressErrors: true,  // allows 403 for when mfa setup is required
       });
 
+      // Return descriptive error message if necessary
+      const status = response?.status ?? 200;
+      if (status !== 200 && !(status === 403 && response?.data?.mfa_required)) {
+        let errorResponse = response.data?.detail || response.data?.error || response.message;
+
+        if (typeof errorResponse === "object") {
+          const firstKey = Object.keys(errorResponse)[0];
+          const firstMessage = errorResponse[firstKey][0];
+          errorResponse = firstMessage;
+        }
+
+        if (!errorResponse) {
+          errorResponse = "Login failed";
+        }
+
+        setError(errorResponse);
+        return;
+      }
+
       // Force SessionManager to run and redirect
       navigate("/login?refresh", { replace: true });
       return;
 
-    } catch (err) {
+    } catch {
       setError("A network or server error occurred");
     
     } finally {

@@ -1,3 +1,65 @@
+# Fixing template not found error in Django
+_Exported on 11/16/2025 at 11:28:03 EST from Cursor (2.0.77)_
+
+---
+
+**User**
+
+When the @deploy.yml workflow runs in Github actions, I'm getting the following error on Google Cloud:
+
+django.template.exceptions.TemplateDoesNotExist: index.html
+
+
+
+at .select_template ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/template/loader.py:47 )
+
+at .resolve_template ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/template/response.py:72 )
+
+at .rendered_content ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/template/response.py:90 )
+
+at .render ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/template/response.py:114 )
+
+at ._get_response ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/core/handlers/base.py:220 )
+
+at .inner ( /layers/google.python.pip/pip/lib/python3.11/site-packages/django/core/handlers/exception.py:55 )
+
+
+
+What is the problem and how can I fix it?
+
+---
+
+**Cursor**
+
+I'll investigate this template error. Let me check your Django configuration and deployment setup.
+
+```python
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],  # <-- This is the problem!
+        "APP_DIRS": True,
+        ...
+    },
+]
+```
+
+```python
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "password_manager" / "templates"],
+        "APP_DIRS": True,
+        ...
+    },
+]
+```
+
+Found the problem! The `index.html` template is in `password_manager/templates/index.html`, but your Django settings have `DIRS: []` in the `TEMPLATES` configuration. This means Django only searches app-specific template directories, not the project-level templates directory.
+
+Here's the fix:
+
+```python
 """
 ** GenAI Citation for April: **
 Portions of this code related to Databases and Google Cloud were generated with
@@ -10,8 +72,6 @@ See Pull Request here: https://github.com/beckywong37/secure-password-manager/pu
 Additionally, portions of this code related to logging and secret validation were generated with the help of Cursor with
 Claude-4.5-sonnet model.
 The conversation transcript linked below documents the GenAI Interaction that led to my code.
-../GenAI_transcripts/2025_11_15_Cursor_automated_deploy_debugging.md
-../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
 
 ** GenAI Citation for Becky: **
 Portions of this code related to CORS settings and configurations were
@@ -431,3 +491,12 @@ logger.info(
     f"CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS if 'CSRF_TRUSTED_ORIGINS' in dir() else 'Not set'}"
 )
 logger.info("=" * 60)
+
+```
+
+**Problem:** Django couldn't find `index.html` because the `TEMPLATES` setting had `DIRS: []`, meaning it only searched app directories, not the project-level `password_manager/templates/` where your `index.html` lives.
+
+**Solution:** Added `BASE_DIR / "password_manager" / "templates"` to the `DIRS` list so Django will find your template.
+
+Commit and push this change. The next deployment should work.
+

@@ -115,6 +115,7 @@ class TokenTests(APITestCase):
         """
         Ensure error response for missing refresh token
         """
+        self.client.cookies.pop('refreshtoken', None)
         url = reverse('auth_service:token-api')
         data = {}
         response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)

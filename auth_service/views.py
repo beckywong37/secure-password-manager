@@ -389,13 +389,15 @@ class JWTTokenRefreshView(APIView):
                 - 400 Bad Response: invalid request
                 Includes refresh and access token cookies
         """
-        refresh_token = request.COOKIES.get('refreshtoken') or request.data.get('refresh')
+        refresh_token = request.data.get('refresh') or request.COOKIES.get('refreshtoken')
 
         if not refresh_token:
             return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
+            _ = refresh.payload  # Force validation
+
             access = str(refresh.access_token)
 
             response = Response({"access": access, "refresh": str(refresh)}, status=status.HTTP_200_OK)
@@ -451,13 +453,14 @@ class LogoutView(APIView):
                 - 400 Bad Request: missing token
                 - 401 Unauthorized: invalid or blacklisted token
         """
-        refresh_token = request.COOKIES.get('refreshtoken') or request.data.get('refresh')
+        refresh_token = request.data.get('refresh') or request.COOKIES.get('refreshtoken')
 
         if not refresh_token:
             return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
+            _ = refresh.payload  # Force validation
             refresh.blacklist()
             return Response('', status.HTTP_200_OK)
         except TokenError as e:

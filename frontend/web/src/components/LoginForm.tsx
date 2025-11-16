@@ -14,6 +14,12 @@ Portions of this code related form card styling, link to toggle between login an
 and input field styling were generated with the help of ChatGPT-5. 
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/690aef41-c520-832a-8ef0-bd4cfe278a41)
 documents the GenAI Interaction that led to my code.
+
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 */
 
 // Imports React and styles

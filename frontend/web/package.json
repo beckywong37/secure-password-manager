@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "coverage": "vitest run --coverage",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",

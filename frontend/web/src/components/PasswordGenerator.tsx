@@ -11,13 +11,18 @@ Portions of this code related to refactoring Generator.tsx into seperate compone
 the help of ChatGPT-5. This included initial planning, prop types, and the useEffect hook.
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/6907e346-dc74-8326-b5f8-bbb7cbc90dea)
 documents the GenAI Interaction that led to my code.
+
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 */
 
 // Imports React and styles
 import { useState } from 'react';
 import {Button} from './Button';
 import {Spacer} from './Spacer';
-import styles from '../pages/Page.module.css';
 
 // Props for the Password Generator component
 // onPasswordGenerated: called when password successfully generated (string password) else void

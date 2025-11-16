@@ -1,4 +1,9 @@
-import type { FC, InputHTMLAttributes, ReactNode } from 'react';
+// GenAI Citation for April:
+// Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+// The conversation in the file below documents the GenAI Interaction that led to my code.
+// ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+
+import type { FC, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react';
 import styles from './Input.module.css';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -45,7 +50,7 @@ export const Input: FC<InputProps> = ({
     );
 };
 
-interface TextareaProps extends InputHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
     label?: ReactNode;
     rows?: number;
     error?: string;
@@ -69,7 +74,7 @@ export const Textarea: FC<TextareaProps> = ({
             <textarea 
                 className={`${styles.textarea} ${hasError ? styles.inputError : ''} ${className || ''}`}
                 rows={rows}
-                {...textareaProps as any}
+                {...textareaProps as TextareaHTMLAttributes<HTMLTextAreaElement>}
             />
             {showMessage && (
                 <div className={hasError ? styles.errorMessage : styles.helperText}>

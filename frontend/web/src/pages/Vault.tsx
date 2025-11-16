@@ -3,6 +3,12 @@ This creates the Vault page using React.
 
 Note:
 To start the Vite dev server, run: 'npm run dev' in the frontend/web directory.
+
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_14_Cursor_generate_dummy_data_for_Vault.md
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 */
 
 import { useState } from 'react';

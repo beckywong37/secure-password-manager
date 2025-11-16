@@ -7,12 +7,15 @@ and [Cursor linked here](../GenAI_transcripts/2025_10_26_CursorReview.md)
 documents the GenAI Interaction that led to my code.
 See Pull Request here: https://github.com/beckywong37/secure-password-manager/pull/6
 
+Additionally, portions of this code related to logging and secret validation were generated with the help of Cursor with
+Claude-4.5-sonnet model.
+The conversation transcript linked below documents the GenAI Interaction that led to my code.
+
 ** GenAI Citation for Becky: **
 Portions of this code related to CORS settings and configurations were
 generated with the help of ChatGPT-5.
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/69045b2c-e3f4-832b-bd71-d59fcef093c6)
 documents the GenAI Interaction that led to my code.
-
 
 Django settings for password_manager project.
 
@@ -29,6 +32,11 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import environ
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ** GenAI Citation for April: **
 # Portions of this code related to Environment Variables were generated with
@@ -57,6 +65,9 @@ def _get_secret_or_env(name: str, default: str = "") -> str:
     )
     # Quick exit if we don't have a project id (e.g., local dev)
     if not project_id:
+        logger.info(
+            f"No GCP project ID found, using environment variable for {name}"
+        )
         return os.environ.get(name, default)
 
     # Try Secret Manager
@@ -67,11 +78,24 @@ def _get_secret_or_env(name: str, default: str = "") -> str:
 
         client = secretmanager.SecretManagerServiceClient()
         resource = f"projects/{project_id}/secrets/{name}/versions/latest"
+        logger.info(
+            f"Attempting to fetch {name} from Secret Manager: {resource}"
+        )
         resp = client.access_secret_version(name=resource)
+        logger.info(f"Successfully fetched {name} from Secret Manager")
         return resp.payload.data.decode("utf-8")
-    except Exception:
-        # Fallback to local dev env if Secret Manager is unavailable
-        return os.environ.get(name, default)
+    except Exception as e:
+        # Log the error with details before falling back
+        logger.error(
+            f"Failed to fetch {name} from Secret Manager: {type(e).__name__}: {str(e)}"
+        )
+        logger.warning(f"Falling back to environment variable for {name}")
+        env_value = os.environ.get(name, default)
+        if not env_value:
+            logger.error(
+                f"CRITICAL: {name} not found in Secret Manager or environment variables!"
+            )
+        return env_value
 
 
 # --- Core settings ---
@@ -94,6 +118,15 @@ if not SECRET_KEY and DEBUG:
         "Using default SECRET_KEY for development. Set SECRET_KEY in .env or environment for production!",
         UserWarning,
     )
+elif not SECRET_KEY and not DEBUG:
+    # CRITICAL: SECRET_KEY is required in production
+    error_msg = (
+        "CRITICAL ERROR: SECRET_KEY is not set! "
+        "Please ensure the SECRET_KEY secret exists in Google Secret Manager "
+        "and the App Engine service account has 'roles/secretmanager.secretAccessor' permission."
+    )
+    logger.error(error_msg)
+    raise RuntimeError(error_msg)
 
 USE_CLOUD_SQL = os.environ.get("USE_CLOUD_SQL", "False") == "True"
 
@@ -228,13 +261,34 @@ if USE_CLOUD_SQL:
         "DB_PASSWORD", os.environ.get("DB_PASSWORD", "")
     )
 
+    # Validate critical database settings in production
+    if not DEBUG:
+        missing_db_settings = []
+        if not DB_NAME:
+            missing_db_settings.append("DB_NAME")
+        if not DB_USER:
+            missing_db_settings.append("DB_USER")
+        if not DB_PASSWORD:
+            missing_db_settings.append("DB_PASSWORD")
+
+        if missing_db_settings:
+            error_msg = (
+                f"CRITICAL ERROR: Missing database settings: {', '.join(missing_db_settings)}. "
+                "Please ensure DB_PASSWORD exists in Google Secret Manager and other DB settings "
+                "are configured in app.yaml or environment variables."
+            )
+            logger.error(error_msg)
+            raise RuntimeError(error_msg)
+
     INSTANCE_CONNECTION_NAME = os.environ.get("INSTANCE_CONNECTION_NAME", "")
     if INSTANCE_CONNECTION_NAME:
         HOST = f"/cloudsql/{INSTANCE_CONNECTION_NAME}"  # App Engine socket
         PORT = ""
+        logger.info(f"Using Cloud SQL Unix socket: {HOST}")
     else:
         HOST = os.environ.get("DB_HOST", "127.0.0.1")  # e.g., CI with proxy
         PORT = os.environ.get("DB_PORT", "5432")
+        logger.info(f"Using Cloud SQL TCP connection: {HOST}:{PORT}")
 
     DATABASES = {
         "default": {
@@ -351,3 +405,27 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+# Log startup configuration for debugging
+logger.info("=" * 60)
+logger.info("Django Settings Configuration Summary")
+logger.info("=" * 60)
+logger.info(f"DEBUG: {DEBUG}")
+logger.info(f"USE_CLOUD_SQL: {USE_CLOUD_SQL}")
+logger.info(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+logger.info(f"SECRET_KEY configured: {'Yes' if SECRET_KEY else 'No'}")
+if USE_CLOUD_SQL:
+    logger.info(f"Database: PostgreSQL (Cloud SQL)")
+    logger.info(f"DB_NAME: {DB_NAME}")
+    logger.info(f"DB_USER: {DB_USER}")
+    logger.info(f"DB_PASSWORD configured: {'Yes' if DB_PASSWORD else 'No'}")
+    logger.info(
+        f"INSTANCE_CONNECTION_NAME: {INSTANCE_CONNECTION_NAME or 'Not set'}"
+    )
+else:
+    logger.info(f"Database: SQLite")
+logger.info(f"CORS_ALLOW_ALL_ORIGINS: {CORS_ALLOW_ALL_ORIGINS}")
+logger.info(
+    f"CSRF_TRUSTED_ORIGINS: {CSRF_TRUSTED_ORIGINS if 'CSRF_TRUSTED_ORIGINS' in dir() else 'Not set'}"
+)
+logger.info("=" * 60)

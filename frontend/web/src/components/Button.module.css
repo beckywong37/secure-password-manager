@@ -1,0 +1,90 @@
+/* GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
+*/
+
+/* Base button styles */
+.button {
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.button:disabled {
+  opacity: var(--button-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* Primary button - filled blue */
+.primary {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--button-primary-bg-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Secondary button - transparent with gray border and text */
+.secondary {
+  background-color: var(--button-secondary-bg);
+  color: var(--button-secondary-text);
+  border: 1px solid var(--button-secondary-border);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--button-secondary-hover-bg);
+  border-color: var(--button-secondary-text);
+}
+
+/* Tertiary button - transparent with blue border, fills on hover */
+.tertiary {
+  background-color: var(--button-tertiary-bg);
+  color: var(--button-tertiary-text);
+  border: 1px solid var(--button-tertiary-border);
+}
+
+.tertiary:hover:not(:disabled) {
+  background-color: var(--button-tertiary-hover-bg);
+  color: var(--button-tertiary-hover-text);
+}
+
+/* Danger button - red for destructive actions */
+.danger {
+  background-color: var(--button-danger-bg);
+  color: var(--button-danger-text);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--button-danger-bg-hover);
+}
+
+/* Link button - appears as inline text link */
+.link {
+  background-color: transparent;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: normal;
+  text-decoration: underline;
+  box-shadow: none;
+}
+
+.link:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+/* Fluid button - full width */
+.fluid {
+  width: 100%;
+}

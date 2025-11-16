@@ -1,22 +1,14 @@
-/* Defines color themes for page and buttons */
-:root {
-  --background-primary:rgb(17, 17, 83);
-  --background-secondary: white;
-  
-  --button-primary: #007bff;
-  --button-primary-hover: darkblue;
-  --button-primary-text: white;
-  --button-disabled-opacity: 0.6;
-}
+/* GenAI Citation for April:
+ Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+ The conversation in the file below documents the GenAI Interaction that led to my code.
+ ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
+ ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md */
+
+/* Color variables hoisted to index.css */
 
 /* Defines CSS properties for the page container */
 .pageContainer {
-  background-color: var(--background-primary);
   min-height: 100vh;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   padding: 20px 0 30px 0;
   box-sizing: border-box;
 }
@@ -28,45 +20,6 @@
   background-color: var(--background-secondary);
   padding: 10px 20px 20px 20px;
   border-radius: 8px;
-}
-
-/* Button styling (for both primary and secondary buttons)*/
-.button {
-  color: var(--button-primary-text);
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-/* Primary button (Generate Password) */
-.buttonPrimary {
-  background-color: var(--button-primary);
-  padding: 10px 20px;
-  font-size: 16px;
-  margin-top: 10px;
-}
-
-/* Secondary button (Check Strength) */
-.buttonSecondary {
-  background-color: var(--button-primary);
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 400;
-  border-radius: 4px;
-}
-
-/* Hover effect for primary and secondary buttons */
-.buttonPrimary:hover,
-.buttonSecondary:hover {
-  background-color: var(--button-primary-hover);
-}
-
-/* Reduce opacity of button when disabled */
-.button:disabled {
-  opacity: var(--button-disabled-opacity);
-  cursor: not-allowed;
 }
 
 /* Focus effect for input fields */

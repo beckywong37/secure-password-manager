@@ -1,3 +1,10 @@
+/*
+GenAI Citation:
+Portions of this code structure and refactoring were generated with the help of GitHub Copilot.
+The conversation transcript can be found here: `GenAI_transcripts/2025_11_16_CopilotSessionsRequests.md`
+*/
+
+
 import { getCookie } from "../cookies/getCookie";
 import { hasAccessToken, type AccessTokenResult } from "../auth/hasAccessToken";
 

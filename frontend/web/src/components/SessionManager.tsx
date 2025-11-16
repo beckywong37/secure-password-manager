@@ -17,6 +17,10 @@
  *     - MFA verify cookie > /mfa-verify
  *     - MFA setup cookie > /mfa-setup
  *     - Otherwise > /login
+ * 
+ * GenAI Citation:
+ * Portions of this code structure and refactoring were generated with the help of GitHub Copilot.
+ * The conversation transcript can be found here: `GenAI_transcripts/2025_11_16_CopilotSessionsRequests.md`
  */
 
 import { useEffect, useState, type ReactNode, type FC } from "react";

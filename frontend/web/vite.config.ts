@@ -1,9 +1,16 @@
+// GenAI Citation for April:
+// Portions of this code related to static file serving were generated with the help of Cursor with
+// Claude-4.5-sonnet model.
+// The conversation transcript linked below documents the GenAI Interaction that led to my code.
+// ../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
+
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/static/',  // Prepend /static/ to all asset URLs in production
   server: {
     proxy: {
       // Proxy API requests to Django backend during development. only active when running pnp m dev
@@ -15,9 +22,9 @@ export default defineConfig({
   },
   build: {
     // Generate manifest.json with mappings like "index.js": "index-<hash>.js"
-    manifest: true,
-    // Points to Django static output directory
-    outDir: path.resolve(__dirname, '../../password_manager/static/'), 
+    manifest: 'manifest.json',  // Place manifest.json at root of outDir, not in .vite/
+    // Build to dist/, Django collectstatic will copy to STATIC_ROOT
+    outDir: path.resolve(__dirname, 'dist'), 
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
     },

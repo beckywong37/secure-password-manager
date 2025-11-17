@@ -7,7 +7,7 @@ and [Cursor linked here](../GenAI_transcripts/2025_10_26_CursorReview.md)
 documents the GenAI Interaction that led to my code.
 See Pull Request here: https://github.com/beckywong37/secure-password-manager/pull/6
 
-Additionally, portions of this code related to logging and secret validation were generated with the help of Cursor with
+Additionally, portions of this code related to logging, secret validation, and static file serving were generated with the help of Cursor with
 Claude-4.5-sonnet model.
 The conversation transcript linked below documents the GenAI Interaction that led to my code.
 ../GenAI_transcripts/2025_11_15_Cursor_automated_deploy_debugging.md
@@ -147,8 +147,8 @@ ALLOWED_HOSTS = [
     or "",
 ]
 
-# Add localhost only in development
-if DEBUG:
+# Add localhost in development or when testing locally
+if DEBUG or not os.environ.get("APPENGINE_URL"):
     ALLOWED_HOSTS.extend(["localhost", "127.0.0.1"])
 
 
@@ -204,6 +204,7 @@ SPECTACULAR_SETTINGS = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",  # CORS middleware must be before CommonMiddleware
     "django.middleware.common.CommonMiddleware",
@@ -345,6 +346,20 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "web" / "dist",
+]
+
+# WhiteNoise configuration for serving static files in production
+# Use CompressedStaticFilesStorage (not Manifest) because Vite already hashes files
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -356,10 +371,10 @@ AUTH_USER_MODEL = "auth_service.User"
 
 # Security settings for production
 if not DEBUG:
-    # HTTPS enforcement
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # HTTPS enforcement (only in actual production, not local testing)
+    SECURE_SSL_REDIRECT = bool(os.environ.get("APPENGINE_URL"))
+    SESSION_COOKIE_SECURE = bool(os.environ.get("APPENGINE_URL"))
+    CSRF_COOKIE_SECURE = bool(os.environ.get("APPENGINE_URL"))
 
     # HSTS headers
     SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -382,7 +397,9 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 # If not allowing all origins, specify allowed origins
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = [
-        APPENGINE_URL.rstrip("/") if APPENGINE_URL else "",
+        origin
+        for origin in [APPENGINE_URL.rstrip("/")]
+        if origin  # Filter out empty strings
     ]
 else:
     # In development, allow common frontend ports

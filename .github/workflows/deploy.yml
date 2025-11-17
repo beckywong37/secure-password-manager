@@ -5,6 +5,11 @@
 # documents the GenAI Interaction that led to my code.
 # See Pull Request here: https://github.com/beckywong37/secure-password-manager/pull/6
 
+# Additionally, Portions of this code related to static file serving were generated with the help of Cursor with
+#  Claude-4.5-sonnet model.
+#  The conversation transcript linked below documents the GenAI Interaction that led to my code.
+#  ../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
+
 name: Deploy App Engine (auto on main, with migrations)
 
 on:
@@ -100,7 +105,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
           cache-dependency-path: 'frontend/web/pnpm-lock.yaml'
 
@@ -114,6 +119,7 @@ jobs:
 
       - name: Collect static
         run: python manage.py collectstatic --noinput
+        # Copies frontend/web/dist/ to static/ for WhiteNoise to serve
 
       - name: Deploy to App Engine
         id: deploy

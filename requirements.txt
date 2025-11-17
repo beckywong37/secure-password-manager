@@ -13,3 +13,4 @@ PyJWT==2.10.1
 sqlparse==0.5.3
 google-cloud-secret-manager==2.25.0
 psycopg2-binary==2.9.10
+whitenoise==6.8.2 # For serving static files in production

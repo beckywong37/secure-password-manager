@@ -27,3 +27,4 @@ env/
 
 # Front-End
 node_modules/
+frontend/web/dist/

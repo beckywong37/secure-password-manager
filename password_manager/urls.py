@@ -10,7 +10,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", FrontendIndexView.as_view(), name="index"),
-    path("auth/", include("auth_service.urls")),
+    path("api/auth/", include("auth_service.urls")),
     path("generator/", include("generator.urls")),
     path("vault/", include("vault.urls")),
     # API Documentation

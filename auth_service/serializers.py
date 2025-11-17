@@ -135,9 +135,10 @@ class LoginSerializer(serializers.Serializer):
         username = attrs.get('username')
         master_password = attrs.get('password')
 
-        user = User.objects.filter(username=username).first()
-        if not user:
-            raise serializers.ValidationError('Invalid username or password')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"user": "User not found"})
 
         # Derive the auth key and compared with the stored auth key
         vault_key = derive_vault_key(user.email, master_password)
@@ -219,6 +220,7 @@ class MFASetupSerializer(serializers.Serializer):
         vault_key = validated_data['vault_key']
 
         # Create or reset TOTP device
+        TOTPDevice.objects.filter(user=user).delete()
         device, _ = TOTPDevice.objects.get_or_create(user=user, name='default')
         device.confirmed = False
         device.save()

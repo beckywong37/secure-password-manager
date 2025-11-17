@@ -179,7 +179,7 @@ INSTALLED_APPS = [
 # DRF configuration
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "auth_service.utils.authentication.CookieJWTAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
@@ -426,6 +426,12 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",  # Vite default port
+    "http://localhost:3000",  # React default port
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
 # Log startup configuration for debugging
 logger.info("=" * 60)
 logger.info("Django Settings Configuration Summary")

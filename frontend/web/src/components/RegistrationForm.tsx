@@ -6,9 +6,7 @@ Features:
 - Registration button
 - Error message display
 - Switch to login form
-
-Note:
-- Have no backend API calls (UI only)
+- Proceed to MFA setup
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -18,45 +16,75 @@ documents the GenAI Interaction that led to my code.
 */
 
 // Imports React and styles
-import { useState } from 'react';
-import styles from '../pages/Page.module.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "../pages/Page.module.css";
+import { apiRequest } from "../utils/http/apiRequest";
 
 interface RegistrationFormProps {
-    // onSwitchToLogin is a function from parent that switches view to login form
+  // onSwitchToLogin is a function from parent that switches view to login form
   onSwitchToLogin: () => void;
 }
 
-export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormProps) {
-    // State variables for form fields
-    // Functions to update the values
+export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormProps) {
+  // State variables for form fields
+  // Functions to update the values
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   // Runs when user submits registration form
-  function submitRegistrationForm(e: React.FormEvent) {
+  async function submitRegistrationForm(e: React.FormEvent) {
     // Prevents page from reloading on submit
     e.preventDefault();
     setError("");
 
     // Check if passwords match, if not, set error message
-    if (password !== confirmPassword) {
+    if (password !== password2) {
       setError("Passwords do not match");
       return;
     }
 
     // Check if all fields are filled out, if not, set error message
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !password2) {
       setError("All fields must be filled out");
       return;
     }
 
-    // TODO: Backend integration API request will be added here
-    // For now, just log the input to the console
-    console.log("Registration form submitted:", { username, email, password });
+    try {
+      await apiRequest("/api/auth/register/", {
+        method: "POST",
+        body: {username, email, password, password2},
+      });
 
+      // Force SessionManager to run and redirect to /mfa/setup
+      navigate("/login?refresh", { replace: true });
+      return;
+
+    } catch (err: any) {
+      // Return descriptive error response if available
+      let errorResponse = err.data?.detail || err.data?.error || err.message;
+
+      if (typeof errorResponse === "object") {
+        const firstKey = Object.keys(errorResponse)[0];
+        const firstMessage = errorResponse[firstKey][0];
+        errorResponse = firstMessage;
+      }
+
+      if (!errorResponse) {
+        errorResponse = "A network or server error occurred";
+      }
+
+      setError(errorResponse);
+      return;
+
+    } finally {
+      setPassword("");
+      setPassword2("");
+    }
   }
 
   // JSX to render Registration Form
@@ -69,11 +97,9 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </p>
       </div>
 
-      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+      <form onSubmit={submitRegistrationForm} style={{ display: "flex", flexDirection: "column", gap: 15 }} >
         <div>
-          <label className={styles.inputLabel}>
-            Username *
-          </label>
+          <label className={styles.inputLabel}>Username *</label>
           <input
             type="text"
             value={username}
@@ -84,9 +110,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Email *
-          </label>
+          <label className={styles.inputLabel}>Email *</label>
           <input
             type="email"
             value={email}
@@ -97,9 +121,7 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Password *
-          </label>
+          <label className={styles.inputLabel}>Password *</label>
           <input
             type="password"
             value={password}
@@ -110,28 +132,24 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Confirm Password *
-          </label>
+          <label className={styles.inputLabel}>Confirm Password *</label>
           <input
             type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={password2}
+            onChange={(e) => setPassword2(e.target.value)}
             className={styles.inputField}
             required
           />
         </div>
 
-        {/* Display error message if passwords do not match or not all fields filled out*/}
+        {/* Display error message */}
         {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>{error}</p>
+          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
+            {error}
+          </p>
         )}
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-          style={{ marginTop: 10, width: "100%" }}
-        >
+        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`} style={{ marginTop: 10, width: "100%" }}>
           Register
         </button>
       </form>
@@ -152,4 +170,3 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     </>
   );
 }
-

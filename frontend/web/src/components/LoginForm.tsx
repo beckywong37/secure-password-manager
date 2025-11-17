@@ -4,10 +4,8 @@ This is the Login Form component for the Secure Password Manager web app.
 Features:
 - Username/Email and password fields
 - Login button
+- Error message display
 - Switch to registration form
-
-Note:
-- Have no backend API calls (UI only)
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -17,46 +15,88 @@ documents the GenAI Interaction that led to my code.
 */
 
 // Imports React and styles
-import { useState } from 'react';
-import styles from '../pages/Page.module.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "../pages/Page.module.css";
+import { apiRequest } from "../utils/http/apiRequest";
 
 interface LoginFormProps {
-    // onSwitchToRegister is a function from parent that switches view to registration form
+  // onSwitchToRegister is a function from parent that switches view to registration form
   onSwitchToRegister: () => void;
 }
 
-export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
-    // username and password variables store the user's input
-    // setUsername and setPassword are functions that update the values
+export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
+  // username and password variables store the user's input
+  // setUsername and setPassword are functions that update the values
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Runs when user submits login form 
-  function submitLoginForm(e: React.FormEvent) {
+  // Runs when user submits login form
+  async function submitLoginForm(e: React.FormEvent) {
     // Prevents page from reloading on submit
     e.preventDefault();
-    // TODO: Backend integration API request will be added here
-    // For now, just log the input to the console
-    console.log("Login form submitted:", { username, password });
-  }
+    setError("");
 
+    // Check if all fields are filled out, if not, set error message
+    if (!username || !password) {
+      setError("All fields must be filled out");
+      return;
+    }
+
+    try {
+      const response = await apiRequest("/api/auth/login/", {
+        method: "POST",
+        body: {username, password},
+        suppressErrors: true,  // allows 403 for when mfa setup is required
+      });
+
+      // Return descriptive error message if necessary
+      const status = response?.status ?? 200;
+      if (status !== 200 && !(status === 403 && response?.data?.mfa_required)) {
+        let errorResponse = response.data?.detail || response.data?.error || response.message;
+
+        if (typeof errorResponse === "object") {
+          const firstKey = Object.keys(errorResponse)[0];
+          const firstMessage = errorResponse[firstKey][0];
+          errorResponse = firstMessage;
+        }
+
+        if (!errorResponse) {
+          errorResponse = "Login failed";
+        }
+
+        setError(errorResponse);
+        return;
+      }
+
+      // Force SessionManager to run and redirect
+      navigate("/login?refresh", { replace: true });
+      return;
+
+    } catch {
+      setError("A network or server error occurred");
+    
+    } finally {
+      setPassword("");
+    }
+  }
 
   // JSX to render Login Form
   return (
     <>
-    {/* Form card styling */}
+      {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Welcome Back to Secure Password Manager</h2>
         <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
           Sign in to your account
         </p>
       </div>
-      
+
       <form onSubmit={submitLoginForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
         <div>
-          <label className={styles.inputLabel}>
-            Username or Email *
-          </label>
+          <label className={styles.inputLabel}>Username *</label>
           <input
             type="text"
             value={username}
@@ -67,9 +107,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
         </div>
 
         <div>
-          <label className={styles.inputLabel}>
-            Password *
-          </label>
+          <label className={styles.inputLabel}>Password *</label>
           <input
             type="password"
             value={password}
@@ -79,10 +117,14 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
           />
         </div>
 
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
+        {/* Display error message */}
+        {error && (
+          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
+            {error}
+          </p>
+        )}
+
+        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`}>
           Login
         </button>
       </form>
@@ -103,4 +145,3 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     </>
   );
 }
-

@@ -440,6 +440,16 @@ class LogoutView(APIView):
     """
     permission_classes = [AllowAny]
 
+    def _logout_response(self, data, status):
+        """
+        Helper to construct logout response and clear cookies from browser
+        """
+        response = Response(data, status)
+        response.delete_cookie('accesstoken')
+        response.delete_cookie('refreshtoken')
+
+        return response
+
     def post(self, request: Request) -> Response:
         """
         Blacklist refresh token to log out user.
@@ -451,23 +461,24 @@ class LogoutView(APIView):
             - Response:
                 - 200 OK: Logout successful
                 - 400 Bad Request: missing token
-                - 401 Unauthorized: invalid or blacklisted token
         """
         refresh_token = request.data.get('refresh') or request.COOKIES.get('refreshtoken')
+        access_token = request.data.get('access') or request.COOKIES.get('accesstoken')
 
-        if not refresh_token:
-            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            refresh = RefreshToken(refresh_token)
-            _ = refresh.payload  # Force validation
-            refresh.blacklist()
-            return Response('', status.HTTP_200_OK)
-        except TokenError as e:
-            return Response(
-                {
-                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
-                    "code": "token_not_valid"
-                },
-                status=status.HTTP_401_UNAUTHORIZED
+        if not refresh_token and not access_token:
+            return self._logout_response(
+                data={"error": "Missing token"},
+                status=status.HTTP_400_BAD_REQUEST
             )
+
+        # Blacklist refresh token
+        if refresh_token:
+            try:
+                RefreshToken(refresh_token).blacklist()
+            except TokenError:
+                pass
+
+        return self._logout_response(
+            data='',
+            status=status.HTTP_200_OK
+        )

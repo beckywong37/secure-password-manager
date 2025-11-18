@@ -27,6 +27,11 @@ class MFASetupTests(APITestCase):
 
     def setUp(self):
         """Runs before every test to initialize reusable attributes"""
+        # Get csrf token
+        csrf_response = self.client.get(reverse('auth_service:csrf-token-api'))
+        csrf = csrf_response.cookies.get('csrftoken').value
+        self.client.cookies['csrftoken'] = csrf
+
         self.factory = APIRequestFactory()
 
     def tearDown(self):
@@ -38,14 +43,20 @@ class MFASetupTests(APITestCase):
 
     def test_mfa_setup_view_missing_cookie(self):
         """Ensure MFASetupView returns 400 if MFA cookie is missing."""
-        request = self.factory.get(reverse('auth_service:mfa-setup-api'))
+        request = self.factory.post(
+            reverse('auth_service:mfa-setup-api'),
+            HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value
+        )
         response = MFASetupView.as_view()(request)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data, {"error": "Missing MFA token."})
 
     def test_mfa_setup_view_invalid_token(self):
         """Ensure MFASetupView returns 400 on invalid token."""
-        request = self.factory.get(reverse('auth_service:mfa-setup-api'))
+        request = self.factory.post(
+            reverse('auth_service:mfa-setup-api'),
+            HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value
+        )
         request.COOKIES['mfa-setup-token'] = 'tampered.invalid.token'
         response = MFASetupView.as_view()(request)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -64,6 +75,11 @@ class MFAVerifyTests(APITestCase):
 
     def setUp(self):
         """Runs before every test to initialize reusable attributes"""
+        # Get csrf token
+        csrf_response = self.client.get(reverse('auth_service:csrf-token-api'))
+        csrf = csrf_response.cookies.get('csrftoken').value
+        self.client.cookies['csrftoken'] = csrf
+
         self.username = 'bcurley'
         self.email = 'curleyr@oregonstate.edu'
         self.factory = APIRequestFactory()
@@ -101,14 +117,22 @@ class MFAVerifyTests(APITestCase):
 
     def test_mfa_verify_view_missing_cookie(self):
         """Ensure MFAVerifyView returns 400 if MFA verify cookie is missing."""
-        request = self.factory.post(reverse("auth_service:mfa-verify-api"), {"mfa_code": "123456"})
+        request = self.factory.post(
+            reverse("auth_service:mfa-verify-api"),
+            {"mfa_code": "123456"},
+            HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value
+        )
         response = MFAVerifyView.as_view()(request)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {"error": "Missing MFA token."})
 
     def test_mfa_verify_view_invalid_token(self):
         """Ensure MFAVerifyView returns 400 on invalid verification token."""
-        request = self.factory.post(reverse("auth_service:mfa-verify-api"), {"mfa_code": "123456"})
+        request = self.factory.post(
+            reverse("auth_service:mfa-verify-api"),
+            {"mfa_code": "123456"},
+            HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value
+        )
         request.COOKIES['mfa-verify-token'] = 'tampered.invalid.token'
         response = MFAVerifyView.as_view()(request)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -59,3 +59,25 @@ input:focus {
   background-color: #ccdbe9;
   text-align: center;
 }
+
+/* Copy button styling */
+.copyButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copyButton:hover {
+  background-color: var(--background-hover, #f0f0f0);
+}
+
+.copyButton:active {
+  background-color: var(--background-active, #e0e0e0);
+}

@@ -11,25 +11,65 @@ assisting in structuring the React-based front-end and Django REST API integrati
 and implementing UI elements such as the interactive length slider and checkboxes for password criteria.
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/69045b2c-e3f4-832b-bd71-d59fcef093c6)
 documents the GenAI Interaction that led to my code.
+
+** Gen AI Citation for April: **
+Portions of this code related to copying the password to the clipboard were generated with
+the help of Cursor with the Claude-4.5-sonnet model.
+The conversation transcript below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2026_11_16_Cursor_refactor_components.md
 */
 
 // Imports
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCopy, faCheck } from '@fortawesome/free-solid-svg-icons';
 import styles from './Page.module.css';
 import PasswordGenerator from '../components/PasswordGenerator';
 import PasswordStrengthCalculator from '../components/PasswordStrengthCalculator';
+import { Input } from '../components/Input';
+import { Spacer } from '../components/Spacer';
 import loginLogo from '../assets/LoginLogo.jpeg';
+
+interface CopyButtonProps {
+  text: string;
+  isCopied: boolean;
+  onCopy: (text: string) => void;
+}
+
+const CopyButton: FC<CopyButtonProps> = ({ text, isCopied, onCopy }) => (
+  <button
+    type="button"
+    className={styles.copyButton}
+    onClick={() => onCopy(text)}
+    aria-label="Copy password"
+  >
+    <FontAwesomeIcon icon={isCopied ? faCheck : faCopy} />
+  </button>
+);
 
 export default function GeneratorPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isCopied, setIsCopied] = useState(false);
 
   // Handle password generation from PasswordGenerator component
   function handlePasswordGenerated(generatedPassword: string) {
     setPassword(generatedPassword);
     setError("");
+    setIsCopied(false);
   }
+
+  // Handle copying password to clipboard
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   // JSX to render Password Generator and Strength Calculator
   return (
@@ -64,10 +104,22 @@ export default function GeneratorPage() {
 
         {/* Display generated password */}
         {password && (
-          <div style={{ marginTop: 15, padding: 10, background: "white", borderRadius: 8, border: "1.5px solid lightgray" }}>
-            <strong>Generated Password:</strong>
-            <p style={{ fontFamily: "monospace", wordBreak: "break-all" }}>{password}</p>
-          </div>
+          <Spacer marginTop="md">
+            <Input
+              label="Generated Password"
+              type="text"
+              value={password}
+              readOnly
+              style={{ fontFamily: "monospace" }}
+              rightAdornment={
+                <CopyButton
+                  text={password}
+                  isCopied={isCopied}
+                  onCopy={handleCopy}
+                />
+              }
+            />
+          </Spacer>
         )}
 
         {/* Password Strength Calculator Section */}

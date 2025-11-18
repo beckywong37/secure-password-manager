@@ -17,15 +17,17 @@ Portions of this code was generated/refactored with the help of Cursor with the 
 The conversation in the file below documents the GenAI Interaction that led to my code.
 ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
 ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
+../GenAI_transcripts/2026_11_16_Cursor_refactor_components.md
 */
 
 // Imports React and styles
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCopy } from '@fortawesome/free-solid-svg-icons';
 import {Button} from './Button';
 import {Input} from './Input';
 import {Spacer} from './Spacer';
+import styles from './RecordDetails.module.css';
 
 // Data returned by Password Strength Calculator
 interface PasswordStrengthResult {
@@ -40,6 +42,23 @@ interface StrengthCalculatorProps {
     passwordToAutoCheck?: string;
 }
 
+interface CopyButtonProps {
+  text: string;
+  isCopied: boolean;
+  onCopy: (text: string) => void;
+}
+
+const CopyButton: FC<CopyButtonProps> = ({ text, isCopied, onCopy }) => (
+  <button
+    type="button"
+    className={styles.copyButton}
+    onClick={() => onCopy(text)}
+    aria-label="Copy password"
+  >
+    <FontAwesomeIcon icon={isCopied ? faCheck : faCopy} />
+  </button>
+);
+
 export default function PasswordStrengthCalculator({ 
     passwordToAutoCheck 
 }: StrengthCalculatorProps) {
@@ -48,6 +67,7 @@ export default function PasswordStrengthCalculator({
   const [strengthData, setStrengthData] = useState<PasswordStrengthResult | null>(null);
   const [strengthError, setStrengthError] = useState("");
   const [isCheckingStrength, setIsCheckingStrength] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // automatically checks password strength when new password is passed in as prop
   useEffect(() => {
@@ -103,6 +123,17 @@ export default function PasswordStrengthCalculator({
     }
   }
 
+  // Handle copying password to clipboard
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div style={{ marginTop: 20, paddingTop: 20, borderTop: "2px solid lightgray" }}>
       <h3>Password Strength Calculator</h3>
@@ -118,9 +149,19 @@ export default function PasswordStrengthCalculator({
             onChange={(e) => {
               setCheckPassword(e.target.value);
               if (strengthError) setStrengthError("");
+              if (isCopied) setIsCopied(false);
             }}
             placeholder="Enter password to check strength"
             error={strengthError}
+            rightAdornment={
+              checkPassword && (
+                <CopyButton
+                  text={checkPassword}
+                  isCopied={isCopied}
+                  onCopy={handleCopy}
+                />
+              )
+            }
           />
         </div>
         {/* Check Strength Button */}

@@ -6,9 +6,7 @@ Features:
 - Registration button
 - Error message display
 - Switch to login form
-
-Note:
-- Have no backend API calls (UI only)
+- Proceed to MFA setup
 
 GenAI Citation for Becky:
 Portions of this code related form card styling, link to toggle between login and registration view,
@@ -24,24 +22,26 @@ The conversation in the file below documents the GenAI Interaction that led to m
 */
 
 // Imports React and styles
-import { useState } from 'react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {Button} from './Button';
 import {Input} from './Input';
 import {Spacer} from './Spacer';
-import styles from '../pages/Page.module.css';
+import styles from "../pages/Page.module.css";
+import { apiRequest } from "../utils/http/apiRequest";
 
 interface RegistrationFormProps {
-    // onSwitchToLogin is a function from parent that switches view to login form
+  // onSwitchToLogin is a function from parent that switches view to login form
   onSwitchToLogin: () => void;
 }
 
-export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormProps) {
-    // State variables for form fields
-    // Functions to update the values
+export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormProps) {
+  // State variables for form fields
+  // Functions to update the values
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [errors, setErrors] = useState<{
     username?: string;
     email?: string;
@@ -49,9 +49,10 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     confirmPassword?: string;
     general?: string;
   }>({});
+  const navigate = useNavigate();
 
   // Runs when user submits registration form
-  function submitRegistrationForm(e: React.FormEvent) {
+  async function submitRegistrationForm(e: React.FormEvent) {
     // Prevents page from reloading on submit
     e.preventDefault();
     setErrors({});
@@ -62,10 +63,10 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     if (!username) newErrors.username = "Username is required";
     if (!email) newErrors.email = "Email is required";
     if (!password) newErrors.password = "Password is required";
-    if (!confirmPassword) newErrors.confirmPassword = "Please confirm your password";
+    if (!password2) newErrors.confirmPassword = "Please confirm your password";
 
     // Check if passwords match
-    if (password && confirmPassword && password !== confirmPassword) {
+    if (password && password2 && password !== password2) {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
@@ -75,10 +76,37 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
       return;
     }
 
-    // TODO: Backend integration API request will be added here
-    // For now, just log the input to the console
-    console.log("Registration form submitted:", { username, email, password });
+    try {
+      await apiRequest("/api/auth/register/", {
+        method: "POST",
+        body: {username, email, password, password2},
+      });
 
+      // Force SessionManager to run and redirect to /mfa/setup
+      navigate("/login?refresh", { replace: true });
+      return;
+
+    } catch (err: any) {
+      // Return descriptive error response if available
+      let errorResponse = err.data?.detail || err.data?.error || err.message;
+
+      if (typeof errorResponse === "object") {
+        const firstKey = Object.keys(errorResponse)[0];
+        const firstMessage = errorResponse[firstKey][0];
+        errorResponse = firstMessage;
+      }
+
+      if (!errorResponse) {
+        errorResponse = "A network or server error occurred";
+      }
+
+      setErrors({ general: errorResponse });
+      return;
+
+    } finally {
+      setPassword("");
+      setPassword2("");
+    }
   }
 
   // JSX to render Registration Form
@@ -130,9 +158,9 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
         <Input
           label="Confirm Password *"
           type="password"
-          value={confirmPassword}
+          value={password2}
           onChange={(e) => {
-            setConfirmPassword(e.target.value);
+            setPassword2(e.target.value);
             if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
           }}
           error={errors.confirmPassword}
@@ -169,4 +197,3 @@ export default function RegistrationForm({ onSwitchToLogin}: RegistrationFormPro
     </>
   );
 }
-

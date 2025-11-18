@@ -4,8 +4,8 @@
 // ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
 
 import { Link } from 'react-router-dom';
-import { SessionStatus } from '../contexts/SessionContext/SessionStatus';
-import { useSession } from '../contexts/SessionContext/useSession';
+import { useSession } from "./SessionManager/useSession";
+import { SessionStatus } from "./SessionManager/SessionStatus";
 import { Button } from './Button';
 import styles from './NavBar.module.css';
 
@@ -21,6 +21,9 @@ export const NavBar = () => {
     return (
         <nav className={styles.navbar}>
             <div className={styles.navLinks}>
+                {/* Links to MFA pages are commented out because when logged in, these route back to vault. */}
+                {/* <Link to="/mfa/verify" className={styles.navLink}>MFA Verify Page</Link>
+                <Link to="/mfa/setup" className={styles.navLink}>MFA Setup Page</Link> */}
                 <Link to="/generator" className={styles.navLink}>Password Generator</Link>
                 <Link to="/vault" className={styles.navLink}>Vault</Link>
             </div>

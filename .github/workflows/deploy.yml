@@ -10,6 +10,11 @@
 #  The conversation transcript linked below documents the GenAI Interaction that led to my code.
 #  ../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
 
+# Additionally, portions of this code related to migrations and google cloud SQL proxies were generated with the
+# help of Cursor with Claude-4.5-sonnet model.
+# The conversation transcript linked below documents the GenAI Interaction that led to my code.
+# ../GenAI_transcripts/2025_11_18_Cursor_fixing_gcloudSQL_tables.md
+
 name: Deploy App Engine (auto on main, with migrations)
 
 on:
@@ -80,7 +85,23 @@ jobs:
           chmod +x cloud-sql-proxy
 
       - name: Start Cloud SQL Proxy
-        run: ./cloud-sql-proxy --port 5432 "$INSTANCE_CONNECTION_NAME" &
+        run: |
+          ./cloud-sql-proxy --port 5432 "$INSTANCE_CONNECTION_NAME" &
+          PROXY_PID=$!
+          echo "PROXY_PID=$PROXY_PID" >> $GITHUB_ENV
+          # Wait for proxy to be ready
+          echo "Waiting for Cloud SQL Proxy to be ready..."
+          for i in {1..30}; do
+            if nc -z 127.0.0.1 5432 2>/dev/null; then
+              echo "Cloud SQL Proxy is ready"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Cloud SQL Proxy failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
       
       - name: Run migrations (against Cloud SQL via proxy)
         env:
@@ -95,7 +116,40 @@ jobs:
           if missing:
               print("Missing env:", missing); sys.exit(1)
           PY
-          python manage.py migrate --noinput
+          
+          # Run migrations with verbose output
+          echo "Running migrations..."
+          python manage.py migrate --noinput --verbosity 2
+          
+          # Verify critical tables exist
+          echo "Verifying database tables..."
+          python - <<'PY'
+          import os
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'password_manager.settings')
+          import django
+          django.setup()
+          from django.db import connection
+          
+          with connection.cursor() as cursor:
+              cursor.execute("""
+                  SELECT tablename FROM pg_tables 
+                  WHERE schemaname = 'public' 
+                  AND tablename LIKE 'auth_service_%'
+              """)
+              tables = [row[0] for row in cursor.fetchall()]
+              
+          print(f"Found auth_service tables: {tables}")
+          
+          required_tables = ['auth_service_user']
+          missing = [t for t in required_tables if t not in tables]
+          
+          if missing:
+              print(f"ERROR: Required tables missing: {missing}")
+              import sys
+              sys.exit(1)
+          
+          print("✓ All required tables exist")
+          PY
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4

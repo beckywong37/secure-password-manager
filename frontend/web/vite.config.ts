@@ -10,7 +10,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/static/',  // Prepend /static/ to all asset URLs in production
+  base: process.env.ENV === 'local' ? '/' : '/static/',  // Prepend /static/ to all asset URLs in production
   server: {
     proxy: {
       // Proxy API requests to Django backend during development. only active when running pnpm dev

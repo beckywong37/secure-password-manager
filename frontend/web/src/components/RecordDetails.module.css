@@ -1,0 +1,95 @@
+/* GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md  */
+
+.recordDetails {
+    background-color: var(--card-background);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 12px;
+}
+
+.recordDetails h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.closeButton:hover {
+    background-color: var(--background-hover, #f0f0f0);
+    color: var(--text-primary);
+}
+
+.closeButton:active {
+    background-color: var(--background-active, #e0e0e0);
+}
+
+.copyButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.copyButton:hover {
+    background-color: var(--background-hover, #f0f0f0);
+}
+
+.copyButton:active {
+    background-color: var(--background-active, #e0e0e0);
+}
+
+.metadata {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-border);
+}
+
+.metadata p {
+    margin: 8px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    line-height: 1.6;
+}
+
+.metadata p strong {
+    min-width: 80px;
+    font-weight: 600;
+}

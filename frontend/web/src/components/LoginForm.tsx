@@ -12,11 +12,20 @@ Portions of this code related form card styling, link to toggle between login an
 and input field styling were generated with the help of ChatGPT-5. 
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/690aef41-c520-832a-8ef0-bd4cfe278a41)
 documents the GenAI Interaction that led to my code.
+
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 */
 
 // Imports React and styles
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {Button} from './Button';
+import {Input} from './Input';
+import {Spacer} from './Spacer';
 import styles from "../pages/Page.module.css";
 import { apiRequest } from "../utils/http/apiRequest";
 
@@ -89,59 +98,53 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Welcome Back to Secure Password Manager</h2>
-        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
-          Sign in to your account
-        </p>
+        <Spacer marginTop="sm" marginBottom="xl">
+          <p style={{ fontSize: "1.1em", color: "gray" }}>
+            Sign in to your account
+          </p>
+        </Spacer>
       </div>
-
-      <form onSubmit={submitLoginForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-        <div>
-          <label className={styles.inputLabel}>Username *</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
-
-        <div>
-          <label className={styles.inputLabel}>Password *</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
+      
+      <form onSubmit={submitLoginForm} style={{ display: "flex", flexDirection: "column" }}>
+        <Input
+          label="Username or Email *"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <Input
+          label="Password *"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
         {/* Display error message */}
         {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
+          <p style={{ color: "var(--color-error)", fontSize: "0.9em" }}>
             {error}
           </p>
         )}
-
-        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`}>
-          Login
-        </button>
+        <Spacer marginTop="sm">
+          <Button type="submit" variant="primary" fluid>
+            Login
+          </Button>
+        </Spacer>
       </form>
 
-      <p style={{ marginTop: 24, textAlign: "center", color: "gray", fontSize: "0.95em" }}>
-        Create an account here{" "}
-        <button
-          onClick={onSwitchToRegister}
-          style={{
-            color: "#007bff",
-            cursor: "pointer",
-            textDecoration: "underline",
-          }}
-        >
-          Register New Account
-        </button>
-      </p>
+      <Spacer marginTop="lg">
+        <p style={{ textAlign: "center", color: "gray", fontSize: "0.95em" }}>
+          Create an account here{" "}
+          <Button
+            onClick={onSwitchToRegister}
+            variant="link"
+          >
+            Register New Account
+          </Button>
+        </p>
+      </Spacer>
     </>
   );
 }

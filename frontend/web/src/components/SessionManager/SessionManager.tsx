@@ -25,18 +25,11 @@
 
 import { useEffect, useState, type ReactNode, type FC } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { apiRequest } from "../utils/http/apiRequest";
-import {hasAccessToken, type AuthSessionResponse } from "../utils/auth/hasAccessToken";
-
-// Possible authentication states
-export const SessionStatus = {
-  LOADING: "LOADING",
-  AUTHENTICATED: "AUTHENTICATED",
-  MFA_VERIFY_REQUIRED: "MFA_VERIFY_REQUIRED",
-  MFA_SETUP_REQUIRED: "MFA_SETUP_REQUIRED",
-  UNAUTHENTICATED: "UNAUTHENTICATED",
-} as const;
-export type SessionStatus = typeof SessionStatus[keyof typeof SessionStatus];
+import { apiRequest } from "../../utils/http/apiRequest";
+import {hasAccessToken, type AuthSessionResponse } from "../../utils/auth/hasAccessToken";
+import { SessionStatus } from "./SessionStatus";
+import { SessionContext } from "./SessionContext";
+import type { SessionContextType } from "./SessionContext";
 
 export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>(
@@ -102,11 +95,25 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
     // If both the route and status are MFA-related, let the user stay
     if (userIsOnMFA && statusIsMFA) return;
 
+    // For authenticated users, only redirect if they're on auth-related routes
+    if (sessionStatus === SessionStatus.AUTHENTICATED) {
+      const isOnAuthRoute = 
+        location.pathname === "/login" || 
+        location.pathname === "/" ||
+        location.pathname.startsWith("/mfa/");
+      
+      if (isOnAuthRoute) {
+        navigate("/vault", { replace: true });
+      }
+      return;
+    }
+
+    // For unauthenticated and MFA states, use the target route map
     const targetRouteMap: Record<SessionStatus, string> = {
       [SessionStatus.UNAUTHENTICATED]: "/login",
-      [SessionStatus.AUTHENTICATED]: "/vault",
       [SessionStatus.MFA_SETUP_REQUIRED]: "/mfa/setup",
       [SessionStatus.MFA_VERIFY_REQUIRED]: "/mfa/verify",
+      [SessionStatus.AUTHENTICATED]: "/vault", // fallback (not used due to above check)
       [SessionStatus.LOADING]: location.pathname, // not used due to early return
     };
 
@@ -117,11 +124,20 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, [sessionStatus, location.pathname, navigate]);
 
+  // Prepare context value
+  const contextValue: SessionContextType = {
+    status: sessionStatus,
+  };
+
   // Show a loading indicator while determining the session state
   if (sessionStatus === SessionStatus.LOADING) {
     return <div>Loading...</div>;
   }
 
-  // Render the application once the session state is known
-  return <>{children}</>;
+  // Render the application once the session state is known, providing session context
+  return (
+    <SessionContext.Provider value={contextValue}>
+      {children}
+    </SessionContext.Provider>
+  );
 };

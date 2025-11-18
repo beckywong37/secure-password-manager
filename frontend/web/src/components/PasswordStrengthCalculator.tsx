@@ -11,11 +11,23 @@ Portions of this code related to refactoring Generator.tsx into seperate compone
 the help of ChatGPT-5. This included initial planning, prop types, and the useEffect hook.
 The conversation transcript [ChatGPT-5 linked here](https://chatgpt.com/c/6907e346-dc74-8326-b5f8-bbb7cbc90dea)
 documents the GenAI Interaction that led to my code.
+
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
+../GenAI_transcripts/2026_11_16_Cursor_refactor_components.md
 */
 
 // Imports React and styles
-import { useState, useEffect } from 'react';
-import styles from '../pages/Page.module.css';
+import { useState, useEffect, type FC } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck, faCopy } from '@fortawesome/free-solid-svg-icons';
+import {Button} from './Button';
+import {Input} from './Input';
+import {Spacer} from './Spacer';
+import styles from './RecordDetails.module.css';
 
 // Data returned by Password Strength Calculator
 interface PasswordStrengthResult {
@@ -30,6 +42,23 @@ interface StrengthCalculatorProps {
     passwordToAutoCheck?: string;
 }
 
+interface CopyButtonProps {
+  text: string;
+  isCopied: boolean;
+  onCopy: (text: string) => void;
+}
+
+const CopyButton: FC<CopyButtonProps> = ({ text, isCopied, onCopy }) => (
+  <button
+    type="button"
+    className={styles.copyButton}
+    onClick={() => onCopy(text)}
+    aria-label="Copy password"
+  >
+    <FontAwesomeIcon icon={isCopied ? faCheck : faCopy} />
+  </button>
+);
+
 export default function PasswordStrengthCalculator({ 
     passwordToAutoCheck 
 }: StrengthCalculatorProps) {
@@ -38,6 +67,7 @@ export default function PasswordStrengthCalculator({
   const [strengthData, setStrengthData] = useState<PasswordStrengthResult | null>(null);
   const [strengthError, setStrengthError] = useState("");
   const [isCheckingStrength, setIsCheckingStrength] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // automatically checks password strength when new password is passed in as prop
   useEffect(() => {
@@ -75,7 +105,7 @@ export default function PasswordStrengthCalculator({
       const data = await response.json();
       setStrengthData(data);
     // Django server not responding, setStrengthError to display error message in the UI
-    } catch (err) {
+    } catch (_err) {
       setStrengthError("Server not reachable. Check if Django is running and connected");
     } finally {
       // Always reset loading state, even if there's an error
@@ -93,6 +123,17 @@ export default function PasswordStrengthCalculator({
     }
   }
 
+  // Handle copying password to clipboard
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   return (
     <div style={{ marginTop: 20, paddingTop: 20, borderTop: "2px solid lightgray" }}>
       <h3>Password Strength Calculator</h3>
@@ -100,30 +141,39 @@ export default function PasswordStrengthCalculator({
         Check the strength of any password
       </p>
       {/* Input field for password to check */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-        <input
-          type="text"
-          value={checkPassword}
-          onChange={(e) => setCheckPassword(e.target.value)}
-          placeholder="Enter password to check strength"
-          style={{flex: 1, padding: 8, border: "1.2px solid lightgray",
-          }}
-        />
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ flex: 1 }}>
+          <Input
+            type="text"
+            value={checkPassword}
+            onChange={(e) => {
+              setCheckPassword(e.target.value);
+              if (strengthError) setStrengthError("");
+              if (isCopied) setIsCopied(false);
+            }}
+            placeholder="Enter password to check strength"
+            error={strengthError}
+            rightAdornment={
+              checkPassword && (
+                <CopyButton
+                  text={checkPassword}
+                  isCopied={isCopied}
+                  onCopy={handleCopy}
+                />
+              )
+            }
+          />
+        </div>
         {/* Check Strength Button */}
         {/* If password is empty, disable button */}
-        <button
+        <Button
           onClick={() => checkPasswordStrength(checkPassword)}
           disabled={isCheckingStrength || !checkPassword}
-          className={`${styles.button} ${styles.buttonSecondary}`}
+          variant="primary"
         >
           {isCheckingStrength ? "Checking..." : "Check Strength"}
-        </button>
+        </Button>
       </div>
-
-      {/* Display error message if password strength check fails */}
-      {strengthError && (
-        <p style={{ color: "red", fontSize: "0.9em", marginTop: 10 }}>{strengthError}</p>
-      )}
 
       {/* Display strength data container*/}
       {strengthData && (
@@ -180,9 +230,11 @@ export default function PasswordStrengthCalculator({
 
           {/* If backend sends no suggestions, display strong password message */}
           {strengthData.notes && strengthData.notes.length === 0 && (
-            <p style={{ color: "green", fontSize: "0.9em", marginTop: 8 }}>
-              ✓ This is a secure and strong password!
-            </p>
+            <Spacer marginTop="sm">
+              <p style={{ color: "var(--color-success)", fontSize: "0.9em" }}>
+                <FontAwesomeIcon icon={faCheck} /> This is a secure and strong password!
+              </p>
+            </Spacer>
           )}
         </div>
       )}

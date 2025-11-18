@@ -12,6 +12,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
 import { apiRequest } from "../utils/http/apiRequest";
+import { Button } from './Button';
+import { Input } from './Input';
+import { Spacer } from './Spacer';
 
 export default function MFAVerifyForm() {
   const [mfaCode, setMfaCode] = useState("");
@@ -72,34 +75,32 @@ export default function MFAVerifyForm() {
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Verify Your MFA Code</h2>
-        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
-          Enter the 6-digit code from your authenticator app.
-        </p>
+        <Spacer marginTop="sm" marginBottom="xl">
+          <p style={{ fontSize: "1.1em", color: "gray" }}>
+            Enter the 6-digit code from your authenticator app.
+          </p>
+        </Spacer>
       </div>
 
-      <form onSubmit={submitMFAForm} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-        <div>
-          <label className={styles.inputLabel}>6-Digit Code *</label>
-          <input
-            type="text"
-            maxLength={6}
-            value={mfaCode}
-            onChange={(e) => setMfaCode(e.target.value)}
-            className={styles.inputField}
-            required
-          />
-        </div>
+      <form onSubmit={submitMFAForm} style={{ display: "flex", flexDirection: "column" }}>
+        <Input
+          label="6-Digit Code *"
+          type="text"
+          maxLength={6}
+          value={mfaCode}
+          onChange={(e) => {
+            setMfaCode(e.target.value);
+            if (error) setError("");
+          }}
+          error={error}
+          required
+        />
 
-        {/* Display error message */}
-        {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
-            {error}
-          </p>
-        )}
-
-        <button type="submit" className={`${styles.button} ${styles.buttonPrimary}`}>
-          Verify
-        </button>
+        <Spacer marginTop="sm">
+          <Button type="submit" variant="primary" fluid>
+            Verify
+          </Button>
+        </Spacer>
       </form>
     </>
   );

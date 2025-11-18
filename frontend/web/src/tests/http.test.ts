@@ -129,6 +129,7 @@ describe("apiRequest helper", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await apiRequest("/create", {
+      // @ts-expect-error - we want to test the normalization of the method
       method: "post", // lowercase to test normalization
       body: payload,
       headers: { "X-Custom": "1" },

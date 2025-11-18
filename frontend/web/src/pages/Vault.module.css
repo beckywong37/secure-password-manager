@@ -1,0 +1,36 @@
+/* GenAI Citation for April:
+ Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+ The conversation in the file below documents the GenAI Interaction that led to my code.
+ ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md  */
+
+.vaultContainer {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--card-border);
+  box-sizing: border-box;
+}
+
+.vaultContent {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.vaultLayout {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.leftColumn {
+  flex: 2;
+  min-width: 0;
+}
+
+.rightColumn {
+  flex: 1;
+  min-width: 0;
+}
+

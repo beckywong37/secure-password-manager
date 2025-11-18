@@ -1,0 +1,67 @@
+/* GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md */
+
+.recordForm {
+    background-color: var(--card-background);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+}
+
+.recordForm h3 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--card-border);
+    padding-bottom: 12px;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.dialogOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.dialogContent {
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideIn 0.2s ease-out;
+}
+
+.dialogContent .recordForm {
+    margin-bottom: 0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

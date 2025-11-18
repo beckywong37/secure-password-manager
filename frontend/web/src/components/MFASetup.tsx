@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
 import { apiRequest } from "../utils/http/apiRequest";
+import { Button } from './Button';
+import { Spacer } from './Spacer';
 
 export default function MFASetupForm() {
   const [qrCode, setQrCode] = useState("");
@@ -49,33 +51,39 @@ export default function MFASetupForm() {
       {/* Form card styling */}
       <div className={styles.formCard}>
         <h2>Set Up Multi-Factor Authentication</h2>
-        <p style={{ fontSize: "1.1em", color: "gray", marginBottom: 30, marginTop: 8 }}>
-          Scan the QR code below using Google Authenticator or your favorite authentication app.
-        </p>
-      </div>
-
-      <div style={{ textAlign: "center", marginBottom: 10 }}>
-        {qrCode ? (
-          <img src={qrCode} alt="MFA Setup QR Code" style={{ width: 200, height: 200 }} />
-        ) : (
-          <p style={{ color: "gray" }}>Loading QR code...</p>
-        )}
-
-        {/* Display error message */}
-        {error && (
-          <p style={{ color: "red", fontSize: "0.9em", marginTop: -5 }}>
-            {error}
+        <Spacer marginTop="sm" marginBottom="xl">
+          <p style={{ fontSize: "1.1em", color: "gray" }}>
+            Scan the QR code below using Google Authenticator or your favorite authentication app.
           </p>
-        )}
+        </Spacer>
       </div>
 
-      <button
-        className={`${styles.button} ${styles.buttonPrimary}`}
-        style={{ width: "100%" }}
+      <Spacer marginBottom="md">
+        <div style={{ textAlign: "center" }}>
+          {qrCode ? (
+            <img src={qrCode} alt="MFA Setup QR Code" style={{ width: 200, height: 200 }} />
+          ) : (
+            <p style={{ color: "gray" }}>Loading QR code...</p>
+          )}
+
+          {/* Display error message */}
+          {error && (
+            <Spacer marginTop="sm">
+              <p style={{ color: "var(--color-error)", fontSize: "0.9em" }}>
+                {error}
+              </p>
+            </Spacer>
+          )}
+        </div>
+      </Spacer>
+
+      <Button
+        variant="primary"
+        fluid
         onClick={() => navigate("/mfa/verify")}
       >
         Continue to MFA Verification
-      </button>
+      </Button>
     </>
   );
 }

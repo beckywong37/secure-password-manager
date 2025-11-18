@@ -1,4 +1,9 @@
 /* 
+GenAI Citation for April:
+Portions of this code was generated/refactored with the help of Cursor with the Claude-4.5-sonnet model
+The conversation in the file below documents the GenAI Interaction that led to my code.
+../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
+
 This sets up the routes for the Secure Password Manager web app.
 
 Features:
@@ -13,16 +18,21 @@ Features:
   - Vault Page: /vault
 */
 
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { ensureCSRFToken } from "./utils/cookies";
 
-import { SessionManager } from "./components/SessionManager";
+import { SessionManager } from "./components/SessionManager/SessionManager";
 import LoginPage from "./pages/Login";
 import MFAPage from "./pages/MFA";
 import GeneratorPage from "./pages/Generator";
 import MFASetupForm from "./components/MFASetup";
 import MFAVerifyForm from "./components/MFAVerify";
+import { VaultPage } from './pages/Vault';
+import { NavBar } from './components/NavBar';
+import { Spacer } from './components/Spacer';
+import styles from './App.module.css';
+import './index.css';
 
 export default function App() {
   // Ensure CSRF cookie exists once app starts
@@ -33,27 +43,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <SessionManager>
-        <div style={{ maxWidth: 900, margin: '20px auto', padding: 16, fontFamily: "sans-serif" }}>
-          <nav style={{ display: 'flex', gap: 20, marginBottom: 30, backgroundColor: 'lightgray', padding: 15, borderRadius: 8 }}>
-            <Link to="/login">Login Page</Link>
-            <Link to="/mfa/verify">MFA Verify Page</Link>
-            <Link to="/mfa/setup">MFA Setup Page</Link>
-            <Link to="/generator">Password Generator</Link>
-            <Link to="/vault">Vault Page</Link>
-          </nav>
+        <div className={styles.appContainer}>
+          <Spacer padding="md">
+            <NavBar />
 
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            
-            <Route path="/mfa" element={<MFAPage />}>
-              <Route path="setup" element={<MFASetupForm />} />
-              <Route path="verify" element={<MFAVerifyForm />} />
-            </Route>
-            
-            <Route path="/generator" element={<GeneratorPage />} />
-            <Route path="/vault" element={<div>Vault Page Under Construction - Coming Soon!</div>} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              
+              <Route path="/mfa" element={<MFAPage />}>
+                <Route path="setup" element={<MFASetupForm />} />
+                <Route path="verify" element={<MFAVerifyForm />} />
+              </Route>
+              
+              <Route path="/generator" element={<GeneratorPage />} />
+              <Route path="/vault" element={<VaultPage />} />
+            </Routes>
+          </Spacer>
         </div>
       </SessionManager>
     </BrowserRouter>

@@ -3,9 +3,12 @@
 // The conversation in the file below documents the GenAI Interaction that led to my code.
 // ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
 // ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
+// ../GenAI_transcripts/2025_11_18_Cursor_RecordForm_UI_refactor.md
 
 import { useState, type FC, type FormEvent } from "react";
 import type { Record } from "../types/Record";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import {Button} from "./Button";
 import {Input, Textarea} from "./Input";
 import styles from "./RecordForm.module.css";
@@ -20,6 +23,19 @@ export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) =>
         url: record?.url ?? '',
         notes: record?.notes ?? '',
     });
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const PasswordToggleButton = () => (
+        <button
+            type="button"
+            className={styles.toggleButton}
+            onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+        >
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </button>
+    );
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -52,10 +68,11 @@ export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) =>
             />
             <Input
                 label="Password:"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={formState.password}
                 required
                 onChange={(e) => setFormState({...formState, password: e.target.value})}
+                secondaryRightAdornment={<PasswordToggleButton />}
             />
             <Input
                 label="Email:"

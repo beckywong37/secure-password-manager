@@ -79,8 +79,12 @@ DB_USER = env("DB_USER")
 DB_PASSWORD = _get_secret_or_env("DB_PASSWORD")
 
 INSTANCE_CONNECTION_NAME = env("INSTANCE_CONNECTION_NAME")
-HOST = f"/cloudsql/{INSTANCE_CONNECTION_NAME}"
-PORT = ""
+
+# Both DB_HOST and DB_PORT are required
+# - CI (proxy): DB_HOST=127.0.0.1, DB_PORT=5432
+# - App Engine (Unix socket): DB_HOST=/cloudsql/..., DB_PORT=""
+HOST = env("DB_HOST")
+PORT = env("DB_PORT")
 
 DATABASES = {
     "default": {

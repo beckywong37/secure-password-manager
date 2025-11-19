@@ -51,6 +51,8 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: postgres
           DB_NAME: testdb
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
           PGHOST: 127.0.0.1
           PGPORT: "5432"
           SECRET_KEY: "ci-only-not-prod"

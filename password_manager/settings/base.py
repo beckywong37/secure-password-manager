@@ -16,6 +16,7 @@ The conversation transcript linked below documents the GenAI Interaction that le
 Additionally, the settings refactor was generated with the help of Cursor with the Claude-4.5-sonnet model.
 The conversation transcript linked below documents the GenAI Interaction that led to my code.
 ../GenAI_transcripts/2025_11_19_Cursor_refactor_django_settings_env.md
+../GenAI_transcripts/2025_11_19_Cursor_cloud_sql_proxy_connection_issue.md
 
 ** GenAI Citation for Becky: **
 Portions of this code related to CORS settings and configurations were

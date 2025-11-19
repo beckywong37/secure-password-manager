@@ -423,8 +423,7 @@ class JWTTokenRefreshView(APIView):
         except TokenError as e:
             return Response(
                 {
-                    "detail": "Token is blacklisted" if "blacklisted" in str(e).lower() else "Token is invalid",
-                    "code": "token_not_valid"
+                    "detail": str(e)
                 },
                 status=status.HTTP_401_UNAUTHORIZED
             )
@@ -475,8 +474,11 @@ class LogoutView(APIView):
         if refresh_token:
             try:
                 RefreshToken(refresh_token).blacklist()
-            except TokenError:
-                pass
+            except TokenError as e:
+                return self._logout_response(
+                    data={"error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         return self._logout_response(
             data='',

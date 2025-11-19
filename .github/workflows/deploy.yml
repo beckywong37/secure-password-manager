@@ -35,6 +35,7 @@ jobs:
     env:
       # App config for Django during CI steps.
       DEBUG: False
+      GOOGLE_CLOUD_PROJECT: ${{ secrets.GCP_PROJECT_ID }}
       DB_NAME: appdb
       DB_USER: appuser
       INSTANCE_CONNECTION_NAME: secure-password-manager-475618:us-central1:secure-password-manager-instance
@@ -69,7 +70,7 @@ jobs:
       - name: gcloud CLI auth
         uses: google-github-actions/auth@v3
         with:
-          project_id: 'secure-password-manager-475618'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
       # Authenticate BEFORE starting the proxy (proxy uses ADC/IAM)
@@ -78,11 +79,6 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           install_components: 'app-engine-python'
-
-      # - name: Auth to GCP (SA key)
-      #   uses: google-github-actions/auth@v3
-      #   with:
-      #     credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
       - name: Download Cloud SQL Auth Proxy
         run: |
@@ -94,6 +90,7 @@ jobs:
           ./cloud-sql-proxy --port 5432 "$INSTANCE_CONNECTION_NAME" &
           PROXY_PID=$!
           echo "PROXY_PID=$PROXY_PID" >> $GITHUB_ENV
+          
           # Wait for proxy to be ready
           echo "Waiting for Cloud SQL Proxy to be ready..."
           for i in {1..30}; do
@@ -177,6 +174,9 @@ jobs:
         run: pnpm run build
 
       - name: Collect static
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
         run: python manage.py collectstatic --noinput
         # Copies frontend/web/dist/ to static/ for WhiteNoise to serve
 

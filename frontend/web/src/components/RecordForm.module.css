@@ -65,3 +65,24 @@ The conversation in the file below documents the GenAI Interaction that led to m
         transform: translateY(0);
     }
 }
+
+.toggleButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggleButton:hover {
+    background-color: var(--background-hover, #f0f0f0);
+}
+
+.toggleButton:active {
+    background-color: var(--background-active, #e0e0e0);
+}

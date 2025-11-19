@@ -29,7 +29,6 @@ jobs:
 
     env:
       # App config for Django during CI steps.
-      USE_CLOUD_SQL: True
       DEBUG: False
       DB_NAME: appdb
       DB_USER: appuser
@@ -62,6 +61,12 @@ jobs:
           python -m pip install -U pip
           pip install -r requirements.txt
 
+      - name: gcloud CLI auth
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: 'secure-password-manager-475618'
+          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+
       # Authenticate BEFORE starting the proxy (proxy uses ADC/IAM)
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -69,10 +74,10 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           install_components: 'app-engine-python'
 
-      - name: Auth to GCP (SA key)
-        uses: google-github-actions/auth@v3
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
+      # - name: Auth to GCP (SA key)
+      #   uses: google-github-actions/auth@v3
+      #   with:
+      #     credentials_json: ${{ secrets.GCP_CREDENTIALS_JSON }}
 
       - name: Download Cloud SQL Auth Proxy
         run: |

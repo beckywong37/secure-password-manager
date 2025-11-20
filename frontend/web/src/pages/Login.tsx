@@ -16,13 +16,18 @@ documents the GenAI Interaction that led to my code.
 */
 
 // Imports React, styles, and components
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ensureCSRFToken } from "../utils/cookies";
 import styles from "./Page.module.css";
 import LoginForm from "../components/LoginForm";
 import RegistrationForm from "../components/RegistrationForm";
 import loginLogo from "../assets/LoginLogo.jpeg";
 
 export default function LoginPage() {
+  useEffect(() => {
+    ensureCSRFToken();    // ensures fresh CSRF after logout redirect
+  }, []);
+
   // mode is a string that can be either 'login' or 'register', 'login' is default
   // setMode is a function used to update the mode
   const [mode, setMode] = useState<"login" | "register">("login");

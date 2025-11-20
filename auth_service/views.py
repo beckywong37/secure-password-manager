@@ -446,6 +446,7 @@ class LogoutView(APIView):
         response = Response(data, status)
         response.delete_cookie('accesstoken')
         response.delete_cookie('refreshtoken')
+        response.delete_cookie('csrftoken')
 
         return response
 

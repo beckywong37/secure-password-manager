@@ -3,19 +3,21 @@
 // The conversation in the file below documents the GenAI Interaction that led to my code.
 // ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md 
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from "./SessionManager/useSession";
 import { SessionStatus } from "./SessionManager/SessionStatus";
 import { Button } from './Button';
+import { Logout } from './Logout';
 import styles from './NavBar.module.css';
 
 export const NavBar = () => {
+    const navigate = useNavigate();
     const { status } = useSession();
     const isAuthenticated = status === SessionStatus.AUTHENTICATED;
 
-    // TODO: Implement actual logout functionality
-    const handleLogout = () => {
-        console.log('Logout clicked - TODO: Implement logout');
+    const handleLogout = async () => {
+        await Logout();
+        navigate("/login", { replace: true });
     };
 
     return (

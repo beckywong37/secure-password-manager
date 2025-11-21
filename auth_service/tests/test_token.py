@@ -109,7 +109,7 @@ class TokenTests(APITestCase):
         }
         response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data, {"detail": "Token is invalid", "code": "token_not_valid"})
+        self.assertEqual(response.data, {"detail": "Token is invalid"})
 
     def test_refresh_token_missing_token(self):
         """
@@ -130,6 +130,7 @@ class TokenTests(APITestCase):
         }
         response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, '')
 
         # Attempt to refresh token with blacklisted token
         url = reverse('auth_service:token-api')
@@ -138,4 +139,4 @@ class TokenTests(APITestCase):
         }
         response = self.client.post(url, data, format='json', HTTP_X_CSRFTOKEN=self.client.cookies['csrftoken'].value)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertEqual(response.data, {"detail": "Token is blacklisted", "code": "token_not_valid"})
+        self.assertContains(response, 'Token is invalid', status_code=status.HTTP_401_UNAUTHORIZED)

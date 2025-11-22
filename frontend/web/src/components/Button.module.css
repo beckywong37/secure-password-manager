@@ -88,3 +88,21 @@ The conversation in the file below documents the GenAI Interaction that led to m
 .fluid {
   width: 100%;
 }
+
+/* Loading state */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinnerWrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.loadingText {
+  display: inline-flex;
+  align-items: center;
+}

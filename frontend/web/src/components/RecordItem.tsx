@@ -5,11 +5,11 @@
 // ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 
 import type { FC } from 'react';
-import type { Record } from '../types/Record';
+import type { VaultRecord } from '../types/VaultRecord';
 import {Button} from './Button';
 import styles from './RecordItem.module.css';
 
-export const RecordItem:FC<{record: Record, onEditRecord: (record: Record) => void, onSelectRecord: (record: Record) => void}> = ({record, onEditRecord, onSelectRecord}) => {
+export const RecordItem:FC<{record: VaultRecord, onEditRecord: (record: VaultRecord) => void, onSelectRecord: (record: VaultRecord) => void}> = ({record, onEditRecord, onSelectRecord}) => {
     return (
         <div className={styles.recordItem} onClick={() => onSelectRecord(record)}>
             <div>

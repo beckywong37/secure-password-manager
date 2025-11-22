@@ -7,8 +7,7 @@ import sys
 def main():
     """Run administrative tasks."""
     os.environ.setdefault(
-        "DJANGO_SETTINGS_MODULE",
-        "password_manager.settings"
+        "DJANGO_SETTINGS_MODULE", "password_manager.settings.deployment"
     )
     try:
         from django.core.management import execute_from_command_line

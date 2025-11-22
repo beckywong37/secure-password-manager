@@ -29,6 +29,22 @@ import {Spacer} from './Spacer';
 import styles from "../pages/Page.module.css";
 import { apiRequest } from "../utils/http/apiRequest";
 
+type LoginResponse = {
+  // True if user requires MFA verification (MFA device already setup)
+  is_mfa_setup?: boolean;
+  // True if user needs to enroll in MFA first (no device yet)
+  mfa_required?: boolean; // matches RecordDetails on 403
+  message?: string;
+  // Username is often echoed back by the backend for confirmation
+  username?: string;
+  // Data required for vault key (optional)
+  vault_key?: string;
+  // error details
+  error?: string | Record<string, string[]>;
+  // Django REST: non_field_errors or field errors
+  detail?: string | Record<string, string[]>;
+};
+
 interface LoginFormProps {
   // onSwitchToRegister is a function from parent that switches view to registration form
   onSwitchToRegister: () => void;
@@ -40,6 +56,7 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   // Runs when user submits login form
@@ -47,15 +64,17 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
     // Prevents page from reloading on submit
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     // Check if all fields are filled out, if not, set error message
     if (!username || !password) {
       setError("All fields must be filled out");
+      setIsLoading(false);
       return;
     }
 
     try {
-      const response = await apiRequest("/api/auth/login/", {
+      const response = await apiRequest<LoginResponse>("/api/auth/login/", {
         method: "POST",
         body: {username, password},
         suppressErrors: true,  // allows 403 for when mfa setup is required
@@ -88,6 +107,7 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
       setError("A network or server error occurred");
     
     } finally {
+      setIsLoading(false);
       setPassword("");
     }
   }
@@ -128,7 +148,7 @@ export default function LoginForm({onSwitchToRegister,}: LoginFormProps) {
           </p>
         )}
         <Spacer marginTop="sm">
-          <Button type="submit" variant="primary" fluid>
+          <Button type="submit" variant="primary" fluid isLoading={isLoading}>
             Login
           </Button>
         </Spacer>

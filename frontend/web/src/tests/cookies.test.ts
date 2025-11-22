@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
 * Cookies Utility Tests
 * 
@@ -18,15 +19,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { getCookie, ensureCSRFToken } from "../utils/cookies";
 
-// Ensure a minimal document implementation for Node (vitest) so document.cookie is available
-if (typeof (globalThis as any).document === "undefined") {
-  (globalThis as any).document = { cookie: "" };
-}
+
 
 describe("Cookies Utilities", () => {
   beforeEach(() => {
     // Reset cookie and mocks between tests
-    (globalThis as any).document.cookie = "";
+    globalThis.document.cookie = "";
     vi.restoreAllMocks();
   });
 
@@ -36,29 +34,29 @@ describe("Cookies Utilities", () => {
 
   describe(getCookie, () => {
     it("returns null when cookie is not present", () => {
-      (globalThis as any).document.cookie = "cookie1=1; cookie2=2";
+      globalThis.document.cookie = "cookie1=1; cookie2=2";
       expect(getCookie("csrftoken")).toBeNull();
     });
 
     it("returns decoded cookie value when present", () => {
-      (globalThis as any).document.cookie = "firstcookie=first; csrftoken=abc%20def%2Bghi; lastcookie=last";
+      globalThis.document.cookie = "firstcookie=first; csrftoken=abc%20def%2Bghi; lastcookie=last";
       expect(getCookie("csrftoken")).toBe("abc def+ghi");
     });
 
     it("finds cookie when it's the last item", () => {
-      (globalThis as any).document.cookie = "a=1; b=2; csrftoken=lastone";
+      globalThis.document.cookie = "a=1; b=2; csrftoken=lastone";
       expect(getCookie("csrftoken")).toBe("lastone");
     });
 
     it("returns null for similarly named cookie that doesn't match", () => {
-      (globalThis as any).document.cookie = "notcsrftoken=val; csrftokenX=val2";
+      globalThis.document.cookie = "notcsrftoken=val; csrftokenX=val2";
       expect(getCookie("csrftoken")).toBeNull();
     });
   });
 
   describe(ensureCSRFToken, () => {
     it("does not call fetch when csrftoken cookie exists", async () => {
-      (globalThis as any).document.cookie = "csrftoken=present";
+      globalThis.document.cookie = "csrftoken=present";
       const fetchMock = vi.fn();
       vi.stubGlobal("fetch", fetchMock);
 
@@ -68,7 +66,7 @@ describe("Cookies Utilities", () => {
     });
 
     it("calls fetch when csrftoken cookie is missing", async () => {
-      (globalThis as any).document.cookie = "";
+      globalThis.document.cookie = "";
       const fetchMock = vi.fn().mockResolvedValue({ ok: true });
       vi.stubGlobal("fetch", fetchMock);
 
@@ -81,7 +79,7 @@ describe("Cookies Utilities", () => {
     });
 
     it("propagates fetch rejection when fetch fails", async () => {
-      (globalThis as any).document.cookie = "";
+      globalThis.document.cookie = "";
       const fetchMock = vi.fn().mockRejectedValue(new Error("network fail"));
       vi.stubGlobal("fetch", fetchMock);
 

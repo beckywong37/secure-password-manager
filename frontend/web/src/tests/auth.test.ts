@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
 * Auth Utility Tests
 * 
@@ -19,14 +20,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { hasAccessToken } from "../utils/auth";
 
 // Ensure a minimal document implementation for Node (vitest) so document.cookie is available
-if (typeof (globalThis as any).document === "undefined") {
-  (globalThis as any).document = { cookie: "" };
-}
+
 
 describe("Auth Utilities", () => {
   beforeEach(() => {
     // Reset cookie and mocks between tests
-    (globalThis as any).document.cookie = "";
+    globalThis.document.cookie = "";
     vi.restoreAllMocks();
   });
 
@@ -36,7 +35,7 @@ describe("Auth Utilities", () => {
 
   describe(hasAccessToken, () => {
     it("returns unauthenticated when access token exists but no CSRF token", async () => {
-      (globalThis as any).document.cookie = "accesstoken=123456789";
+      globalThis.document.cookie = "accesstoken=123456789";
       
       const result = await hasAccessToken();
 
@@ -60,7 +59,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns unauthenticated when refresh token exists but no CSRF token", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=123456789";
+      globalThis.document.cookie = "refreshtoken=123456789";
       
       const result = await hasAccessToken();
       
@@ -73,7 +72,7 @@ describe("Auth Utilities", () => {
     });
 
     it("calls /api/auth/session/ first when refresh + CSRF exist", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
       const fetchMock = vi.fn().mockResolvedValue({ ok: true , json: async () => ({})});
       vi.stubGlobal("fetch", fetchMock);
 
@@ -94,10 +93,10 @@ describe("Auth Utilities", () => {
     });
 
     it("returns unauthenticated when no access token but refresh token present", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
       
       const fetchMock = vi.fn().mockImplementation(async () => {
-        (globalThis as any).document.cookie = "accesstoken=new_access_token";
+        globalThis.document.cookie = "accesstoken=new_access_token";
         return {ok: true, json: async () => ({})};
       });
 
@@ -115,7 +114,7 @@ describe("Auth Utilities", () => {
     }); 
 
     it("returns unauthenticated when fetch() throws an error", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
 
       const fetchMock = vi.fn().mockRejectedValue(new Error("network fail"));
       vi.stubGlobal("fetch", fetchMock);
@@ -131,7 +130,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns unauthenticated when refresh endpoint responds with !ok", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
 
       const fetchMock = vi.fn().mockResolvedValue({ok: false, json: async () => ({ detail: "invalid refresh" })});
       vi.stubGlobal("fetch", fetchMock);
@@ -146,11 +145,11 @@ describe("Auth Utilities", () => {
     });
 
     it("returns unauthenticated when session response is null", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
 
       // Mock apiRequest directly, bypassing fetch → suppressErrors logic
       const apiMock = vi.spyOn(await import("../utils/http/apiRequest"), "apiRequest");
-      apiMock.mockResolvedValueOnce(null);  // session = null
+      apiMock.mockResolvedValueOnce({data: null, status: 200, message: "No session response"});  // session = null
 
       const result = await hasAccessToken();
 
@@ -165,7 +164,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns Unknown error when a non-Error value is thrown", async () => {
-      (globalThis as any).document.cookie = "csrftoken=foo"; // allow flow into try {}
+      globalThis.document.cookie = "csrftoken=foo"; // allow flow into try {}
 
       // Force the try block to throw a non-Error value
       const fetchMock = vi.fn().mockImplementation(() => {
@@ -185,7 +184,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns authenticated when session indicates authentication", async () => {
-      (globalThis as any).document.cookie = "refreshtoken=01234; csrftoken=56789";
+      globalThis.document.cookie = "refreshtoken=01234; csrftoken=56789";
 
       const fetchMock = vi.fn().mockResolvedValue({ok: true, json: async () => ({ is_authenticated: true })});
       vi.stubGlobal("fetch", fetchMock);
@@ -200,7 +199,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns authenticated and refreshed when refresh succeeds", async () => {
-      (globalThis as any).document.cookie = "csrftoken=56789";
+      globalThis.document.cookie = "csrftoken=56789";
 
       const fetchMock = vi.fn()
         // Call to session endpoint
@@ -231,7 +230,7 @@ describe("Auth Utilities", () => {
     });
 
     it("returns error when refresh token attempt fails", async () => {
-      (globalThis as any).document.cookie = "csrftoken=56789";
+      globalThis.document.cookie = "csrftoken=56789";
 
       const fetchMock = vi.fn()
         // Call to session endpoint

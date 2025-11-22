@@ -29,6 +29,19 @@ export type HasAccessTokenOptions = {
   preloadSession?: AuthSessionResponse | null;
 };
 
+
+const getSession = async (options: HasAccessTokenOptions): Promise<AuthSessionResponse> => {
+  if (options.preloadSession) {
+    return options.preloadSession;
+  }
+
+  const {data: session} = await apiRequest<AuthSessionResponse>("/api/auth/session/", {
+    suppressErrors: true,
+  });
+
+  return session;
+}
+
 /**
 * Helper to attempt to ensure a valid access token is available to access protected resources.
 * 
@@ -56,10 +69,7 @@ export const hasAccessToken = async (
 
   try {
     // Get auth status back from preloaded sessiond ata or server (uses HttpOnly cookies)
-    const session = options.preloadSession ?? 
-      (await apiRequest<AuthSessionResponse>("/api/auth/session/", {
-        suppressErrors: true,
-      }));
+    const session = await getSession(options);
 
     if (!session) {
       return {
@@ -81,7 +91,7 @@ export const hasAccessToken = async (
 
     // Has valid refresh token - attempt refresh
     if (session.has_refresh_token) {
-      const tokenResponse = await apiRequest<{
+      const {data: tokenResponse} = await apiRequest<{
         access?: string;
         refresh?: string;
         status?: number;

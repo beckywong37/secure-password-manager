@@ -22,13 +22,57 @@ The conversation in the file below documents the GenAI Interaction that led to m
 */
 
 // Imports React and styles
-import { useState } from "react";
+import { useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import {Button} from './Button';
 import {Input} from './Input';
 import {Spacer} from './Spacer';
 import styles from "../pages/Page.module.css";
-import { apiRequest } from "../utils/http/apiRequest";
+import { apiRequest, type ApiResponse } from "../utils/http/apiRequest";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
+// Types for /api/auth/register/ response (from views.py logic)
+
+export interface RegisterSuccessResponse {
+  id: number;
+  username: string;
+  email: string;
+  // The backend may include other fields, e.g., date_joined, etc.
+  // MFA handling fields:
+  is_mfa_setup: boolean;
+  message: string;
+}
+
+export interface RegisterErrorResponse {
+  detail: Record<string, string[]>;
+  error: string | { [field: string]: string[] }; // DRF error detail can be field errors or a general error string
+}
+
+// Union type for the fetch return type of registration:
+export type RegisterResponse = RegisterSuccessResponse | RegisterErrorResponse;
+
+interface PasswordToggleButtonProps {
+    showPassword: boolean;
+    onToggle: () => void;
+}
+
+const PasswordToggleButton: FC<PasswordToggleButtonProps> = ({ showPassword, onToggle }) => (
+    <button
+        type="button"
+        style={{ 
+          background: 'none', 
+          border: 'none', 
+          cursor: 'pointer',
+          padding: '0.5rem',
+          color: 'var(--color-text-secondary, gray)'
+        }}
+        onClick={onToggle}
+        aria-label={showPassword ? 'Hide password' : 'Show password'}
+    >
+        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+    </button>
+);
 
 interface RegistrationFormProps {
   // onSwitchToLogin is a function from parent that switches view to login form
@@ -42,6 +86,9 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     username?: string;
     email?: string;
@@ -56,6 +103,7 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
     // Prevents page from reloading on submit
     e.preventDefault();
     setErrors({});
+    setIsLoading(true);
 
     const newErrors: typeof errors = {};
 
@@ -73,11 +121,12 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
     // If there are any errors, set them and return
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setIsLoading(false);
       return;
     }
 
     try {
-      await apiRequest("/api/auth/register/", {
+      await apiRequest<RegisterResponse>("/api/auth/register/", {
         method: "POST",
         body: {username, email, password, password2},
       });
@@ -86,9 +135,9 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
       navigate("/login?refresh", { replace: true });
       return;
 
-    } catch (err: any) {
+    } catch (err) {
       // Return descriptive error response if available
-      let errorResponse = err.data?.detail || err.data?.error || err.message;
+      let errorResponse: string | Record<string, string[]> = (err as ApiResponse<RegisterErrorResponse>).data?.detail || (err as ApiResponse<RegisterErrorResponse>).data?.error || (err as ApiResponse<RegisterErrorResponse>).message;
 
       if (typeof errorResponse === "object") {
         const firstKey = Object.keys(errorResponse)[0];
@@ -104,6 +153,7 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
       return;
 
     } finally {
+      setIsLoading(false);
       setPassword("");
       setPassword2("");
     }
@@ -146,7 +196,7 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
         />
         <Input
           label="Password *"
-          type="password"
+          type={showPassword ? "text" : "password"}
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
@@ -154,10 +204,16 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
           }}
           error={errors.password}
           required
+          secondaryRightAdornment={
+            <PasswordToggleButton 
+              showPassword={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+            />
+          }
         />
         <Input
           label="Confirm Password *"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           value={password2}
           onChange={(e) => {
             setPassword2(e.target.value);
@@ -165,6 +221,12 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
           }}
           error={errors.confirmPassword}
           required
+          secondaryRightAdornment={
+            <PasswordToggleButton 
+              showPassword={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
+          }
         />
 
         {/* Display general error message if needed */}
@@ -177,6 +239,7 @@ export default function RegistrationForm({ onSwitchToLogin }: RegistrationFormPr
             type="submit"
             variant="primary"
             fluid
+            isLoading={isLoading}
           >
             Register
           </Button>

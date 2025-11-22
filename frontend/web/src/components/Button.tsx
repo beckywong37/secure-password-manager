@@ -6,29 +6,45 @@
 
 import type { FC, ButtonHTMLAttributes } from 'react';
 import styles from './Button.module.css';
+import { LoadingSpinner } from './LoadingSpinner';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'danger' | 'link';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   fluid?: boolean;
+  isLoading?: boolean;
   children: React.ReactNode;
 }
 
 export const Button: FC<ButtonProps> = ({ 
   variant = 'primary', 
   fluid = false,
+  isLoading = false,
+  disabled = false,
   className = '', 
   children, 
   ...props 
 }) => {
   const variantClass = styles[variant];
   const fluidClass = fluid ? styles.fluid : '';
-  const combinedClassName = `${styles.button} ${variantClass} ${fluidClass} ${className}`.trim();
+  const loadingClass = isLoading ? styles.loading : '';
+  const combinedClassName = `${styles.button} ${variantClass} ${fluidClass} ${loadingClass} ${className}`.trim();
   
   return (
-    <button className={combinedClassName} {...props}>
-      {children}
+    <button 
+      className={combinedClassName} 
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading && (
+        <span className={styles.spinnerWrapper}>
+          <LoadingSpinner size="small" />
+        </span>
+      )}
+      <span className={isLoading ? styles.loadingText : ''}>
+        {children}
+      </span>
     </button>
   );
 };

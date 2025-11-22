@@ -70,9 +70,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Log configuration only if this is the active settings module
-_active_settings = env(
-    "DJANGO_SETTINGS_MODULE", default="password_manager.settings"
-)
+_active_settings = env("DJANGO_SETTINGS_MODULE", default="")
 if _active_settings == "password_manager.settings.local":
     logger.info("=" * 60)
     logger.info("Django Settings: local")

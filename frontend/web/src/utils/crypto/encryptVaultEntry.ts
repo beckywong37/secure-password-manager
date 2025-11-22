@@ -13,9 +13,10 @@ import { toBytes, toHex } from "./helpers";
 * @returns {Promise<string>} ciphertext hex-encoded string (includes prepended nonce) 
 */
 export const encryptVaultEntry = async (vaultKey: Uint8Array | string, data: string | object): Promise<string> => {
+    const keyBytes = toBytes(vaultKey);
     const key = await crypto.subtle.importKey(
         'raw',
-        toBytes(vaultKey).buffer as ArrayBuffer,
+        keyBytes as BufferSource,
         'AES-GCM',
         false,
         ['encrypt', 'decrypt']
@@ -23,13 +24,14 @@ export const encryptVaultEntry = async (vaultKey: Uint8Array | string, data: str
 
     const nonce = crypto.getRandomValues(new Uint8Array(12));  // 96 bits
 
+    const dataBytes = toBytes(data);
     const encrypted = await crypto.subtle.encrypt(
         {
             name: 'AES-GCM',
             iv: nonce
         },
         key,
-        toBytes(data).buffer as ArrayBuffer
+        dataBytes as BufferSource
     );
 
     // Pack nonce and ciphertext together into single Uint8Array

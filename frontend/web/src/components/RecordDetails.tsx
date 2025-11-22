@@ -5,7 +5,7 @@
 // ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 
 import { useState, type FC } from 'react';
-import type { Record } from '../types/Record';
+import type { VaultRecord } from '../types/VaultRecord';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy, faCheck, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { Input, Textarea } from './Input';
@@ -47,9 +47,10 @@ const PasswordToggleButton: FC<PasswordToggleButtonProps> = ({ showPassword, onT
     </button>
 );
 
-export const RecordDetails:FC<{record: Record, onClose: () => void, onDelete: (record: Record) => void}> = ({record, onClose, onDelete}) => {
+export const RecordDetails:FC<{record: VaultRecord, onClose: () => void, onDelete: (record: VaultRecord) => Promise<void>}> = ({record, onClose, onDelete}) => {
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const handleCopy = async (text: string, field: string) => {
         try {
@@ -150,7 +151,15 @@ export const RecordDetails:FC<{record: Record, onClose: () => void, onDelete: (r
                 <Button 
                     variant="danger"
                     fluid
-                    onClick={() => onDelete(record)}
+                    isLoading={isDeleting}
+                    onClick={async () => {
+                        setIsDeleting(true);
+                        try {
+                            await onDelete(record);
+                        } finally {
+                            setIsDeleting(false);
+                        }
+                    }}
                 >
                     Delete Record
                 </Button>

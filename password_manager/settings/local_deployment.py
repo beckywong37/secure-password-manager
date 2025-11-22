@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 DEBUG = False
 
 # Log configuration only if this is the active settings module
-_active_settings = env(
-    "DJANGO_SETTINGS_MODULE", default="password_manager.settings"
-)
+_active_settings = env("DJANGO_SETTINGS_MODULE", default="")
 if _active_settings == "password_manager.settings.local_deployment":
     logger.info("=" * 60)
     logger.info("Django Settings: local_deployment")

@@ -6,17 +6,19 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useSession } from "./SessionManager/useSession";
 import { SessionStatus } from "./SessionManager/SessionStatus";
+import { useVaultKey } from '../contexts/useVaultKey';
 import { Button } from './Button';
-import { Logout } from './Logout';
+import { endSession } from '../utils/auth/endSession';
 import styles from './NavBar.module.css';
 
 export const NavBar = () => {
     const navigate = useNavigate();
     const { status } = useSession();
+    const { clearVaultKey } = useVaultKey();
     const isAuthenticated = status === SessionStatus.AUTHENTICATED;
 
     const handleLogout = async () => {
-        await Logout();
+        await endSession(clearVaultKey);
         navigate("/login", { replace: true });
     };
 

@@ -27,6 +27,7 @@ import { useEffect, useState, type ReactNode, type FC } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { apiRequest } from "../../utils/http/apiRequest";
 import {hasAccessToken, type AuthSessionResponse } from "../../utils/auth/hasAccessToken";
+import { useVaultKey } from '../../contexts/useVaultKey';
 import { SessionStatus } from "./SessionStatus";
 import { SessionContext } from "./SessionContext";
 import type { SessionContextType } from "./SessionContext";
@@ -37,7 +38,8 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
   );
 
   const navigate = useNavigate();
-  const location = useLocation()
+  const location = useLocation();
+  const { clearVaultKey } = useVaultKey();
 
   /**
    * Evaluate server-side session + tokens whenever the route changes.
@@ -54,7 +56,7 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
 
         // First, see if we can establish a valid access token (or refresh)
         const { authenticated } = await hasAccessToken({
-          preloadSession: session,
+          preloadSession: session.data,
         });
 
         if (authenticated) {
@@ -63,19 +65,21 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
         }
 
         // Not authenticated with JWTs; fall back to MFA / unauthenticated state
-        if (session?.has_mfa_verify_token) {
+        if (session.data?.has_mfa_verify_token) {
           setSessionStatus(SessionStatus.MFA_VERIFY_REQUIRED);
-        } else if (session?.has_mfa_setup_token) {
+        } else if (session.data?.has_mfa_setup_token) {
           setSessionStatus(SessionStatus.MFA_SETUP_REQUIRED);
         } else {
           setSessionStatus(SessionStatus.UNAUTHENTICATED);
+          clearVaultKey(); // Clear vault key when session becomes unauthenticated
         }
       } catch {
         setSessionStatus(SessionStatus.UNAUTHENTICATED);
+        clearVaultKey(); // Clear vault key on session check failure
       }
     };
     checkSession();
-  }, [location.key])
+  }, [location.key, clearVaultKey])
 
   /**
    * Navigation logic based on current session status.

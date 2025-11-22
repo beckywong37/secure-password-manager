@@ -3,7 +3,7 @@
 // The conversation in the file below documents the GenAI Interaction that led to my code.
 // ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 
-export interface Record {
+export interface VaultRecord {
     id: number;
     title: string;
     username: string;

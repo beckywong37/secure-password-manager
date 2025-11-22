@@ -6,16 +6,16 @@
 // ../GenAI_transcripts/2025_11_18_Cursor_RecordForm_UI_refactor.md
 
 import { useState, type FC, type FormEvent } from "react";
-import type { Record } from "../types/Record";
+import type { VaultRecord } from "../types/VaultRecord";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import {Button} from "./Button";
 import {Input, Textarea} from "./Input";
 import styles from "./RecordForm.module.css";
 
-export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) => void, onCancel: () => void}> = ({record, onSubmit, onCancel}) => {
+export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: VaultRecord) => Promise<void>, onCancel: () => void}> = ({record, onSubmit, onCancel}) => {
 
-    const [formState, setFormState] = useState<Pick<Record, 'title' | 'username' | 'password' | 'email' | 'url' | 'notes'>>({
+    const [formState, setFormState] = useState<Pick<VaultRecord, 'title' | 'username' | 'password' | 'email' | 'url' | 'notes'>>({
         title: record?.title ?? '',
         username: record?.username ?? '',
         password: record?.password ?? '',
@@ -25,6 +25,7 @@ export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) =>
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const PasswordToggleButton = () => (
         <button
@@ -37,14 +38,19 @@ export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) =>
         </button>
     );
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        onSubmit({
-            ...formState,
-            id: record?.id ?? 0,
-            created_at: record?.created_at ?? new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        });
+        setIsSubmitting(true);
+        try {
+            await onSubmit({
+                ...formState,
+                id: record?.id ?? 0,
+                created_at: record?.created_at ?? new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     const isNewRecord = record === null;
@@ -95,8 +101,12 @@ export const RecordForm:FC<{record: Record | null, onSubmit: (record: Record) =>
                 helperText="Optional - Additional information"
             />
             <div className={styles.buttonGroup}>
-                <Button type="submit" variant="primary">{isNewRecord ? 'Add' : 'Save'}</Button>
-                <Button type="button" variant="secondary" onClick={onCancel}>Cancel</Button>
+                <Button type="submit" variant="primary" isLoading={isSubmitting}>
+                    {isNewRecord ? 'Add' : 'Save'}
+                </Button>
+                <Button type="button" variant="secondary" onClick={onCancel} disabled={isSubmitting}>
+                    Cancel
+                </Button>
             </div>
         </form>
     );

@@ -11,108 +11,99 @@ The conversation in the file below documents the GenAI Interaction that led to m
 ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 */
 
-import { useState } from 'react';
-import type { Record } from '../types/Record';
+import { useState, useEffect, useCallback } from 'react';
+import type { VaultRecord as VaultRecord } from '../types/VaultRecord';
 import styles from './Vault.module.css';
 import { VaultList } from '../components/VaultList';
 import { RecordForm } from '../components/RecordForm';
 import { RecordDetails } from '../components/RecordDetails';
+import { LoadingSpinner } from '../components/LoadingSpinner';
+import { Spacer } from '../components/Spacer';
+import { apiRequest } from '../utils/http/apiRequest';
+import { useVaultKey } from '../contexts/useVaultKey';
+import { encryptVaultEntry } from '../utils/crypto/encryptVaultEntry';
+import { decryptVaultEntry } from '../utils/crypto/decryptVaultEntry';
 
-
-// TODO: Hard coded data for now, will be replaced with API data later
-const dummyRecords = [
-  {
-    id: 1,
-    title: 'GitHub',
-    username: 'johndoe',
-    password: 'U2FsdGVkX1+encrypted_password_hash_1',
-    email: 'john.doe@example.com',
-    url: 'https://github.com',
-    notes: 'Work account',
-    created_at: '2024-01-15T10:30:00Z',
-    updated_at: '2024-03-20T14:22:00Z',
-  },
-  {
-    id: 2,
-    title: 'Gmail',
-    username: 'john.doe',
-    password: 'U2FsdGVkX1+encrypted_password_hash_2',
-    email: 'john.doe@gmail.com',
-    url: 'https://mail.google.com',
-    notes: 'Personal email account',
-    created_at: '2024-01-16T09:15:00Z',
-    updated_at: '2024-02-10T11:45:00Z',
-  },
-  {
-    id: 3,
-    title: 'Netflix',
-    username: 'johndoe@example.com',
-    password: 'U2FsdGVkX1+encrypted_password_hash_3',
-    email: 'johndoe@example.com',
-    url: 'https://www.netflix.com',
-    notes: '',
-    created_at: '2024-02-01T18:00:00Z',
-    updated_at: '2024-02-01T18:00:00Z',
-  },
-  {
-    id: 4,
-    title: 'AWS Console',
-    username: 'admin',
-    password: 'U2FsdGVkX1+encrypted_password_hash_4',
-    email: 'admin@company.com',
-    url: 'https://console.aws.amazon.com',
-    notes: 'Production environment credentials - handle with care',
-    created_at: '2024-03-05T08:20:00Z',
-    updated_at: '2024-10-12T16:30:00Z',
-  },
-  {
-    id: 5,
-    title: 'LinkedIn',
-    username: 'john-doe-123',
-    password: 'U2FsdGVkX1+encrypted_password_hash_5',
-    email: 'john.doe@example.com',
-    url: 'https://www.linkedin.com',
-    notes: 'Professional network',
-    created_at: '2024-01-20T12:00:00Z',
-    updated_at: '2024-05-18T09:12:00Z',
-  },
-  {
-    id: 6,
-    title: 'Bank Account',
-    username: 'johndoe1985',
-    password: 'U2FsdGVkX1+encrypted_password_hash_6',
-    email: '',
-    url: 'https://www.mybank.com',
-    notes: 'Main checking account',
-    created_at: '2024-02-14T14:30:00Z',
-    updated_at: '2024-08-22T10:15:00Z',
-  },
-];
 
 export const VaultPage = () => {
-    const [records, setRecords] = useState<Record[]>(dummyRecords);
+    const [records, setRecords] = useState<VaultRecord[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const [editingRecord, setEditingRecord] = useState<Record | null | undefined>(undefined);
-    const [selectedRecord, setSelectedRecord] = useState<Record | null >(null);
+    const [editingRecord, setEditingRecord] = useState<VaultRecord | null | undefined>(undefined);
+    const [selectedRecord, setSelectedRecord] = useState<VaultRecord | null >(null);
+    
+    const { vaultKey } = useVaultKey();
 
-    const handleRecordSubmit = (record: Record) => {
-        if (editingRecord) {
-            setRecords(records.map(r => r.id === editingRecord.id ? record : r));
-        } else {
-            setRecords([...records, record]);
+    const getErrorMessage = (err: unknown): string => {
+        if (err instanceof Error) return err.message;
+        if (typeof err === 'object' && err !== null && 'message' in err) {
+          return String(err.message);
         }
-        setEditingRecord(undefined);
-    }
+        return 'An error occurred';
+      };
+
+    const fetchRecords = useCallback(async () => {
+        if (!vaultKey) {
+            setError('Vault key not available. Please log in again.');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const {data} = await apiRequest<VaultRecord[]>('/api/vault/records/', {
+              method: 'GET',
+              requiresAuth: true
+            });
+            
+            // Decrypt sensitive fields
+            const decryptedRecords = await Promise.all(
+                data.map(async (record) => ({
+                    ...record,
+                    password: await decryptVaultEntry(vaultKey, record.password),
+                    notes: record.notes ? await decryptVaultEntry(vaultKey, record.notes) : '',
+                }))
+            );
+            
+            setRecords(decryptedRecords);
+          } catch (err) {
+            setError(getErrorMessage(err));
+            console.error('Error fetching records:', err);
+          } finally {
+            setLoading(false);
+          }
+    }, [vaultKey]);
+
+    // Mutations without loading spinner
+    const performMutation = async function<T>(
+        apiCall: Promise<T>
+    ): Promise<boolean> {
+        try {
+            setError(null);
+            await apiCall;
+            await fetchRecords(); // Re-fetch after any mutation
+            return true;
+        } catch (err) {
+            setError(getErrorMessage(err));
+            console.error('Error:', err);
+            return false;
+        }
+    };
+
+    useEffect(() => {
+        fetchRecords();
+      }, [fetchRecords]);
 
     const onAddRecord = () => {
         setEditingRecord(null);
         }
     
-    const onEditRecord = (record: Record) => {
+    const onEditRecord = (record: VaultRecord) => {
         setEditingRecord(record);
     }
 
-    const onSelectRecord = (record: Record) => {
+    const onSelectRecord = (record: VaultRecord) => {
         setSelectedRecord(record);
     }
 
@@ -124,15 +115,59 @@ export const VaultPage = () => {
         setSelectedRecord(null);
     }
 
-    const onDeleteRecord = (record: Record) => {
-        setRecords(records.filter(r => r.id !== record.id));
-        setSelectedRecord(null);
+    const onDeleteRecord = async (record: VaultRecord) => {
+        const success = await performMutation(
+        apiRequest(`/api/vault/records/${record.id}/`, {
+            method: 'DELETE',
+            requiresAuth: true
+        }));
+        if (success) {
+            setSelectedRecord(null);
+        }
     }
+
+    const handleRecordSubmit = async (record: VaultRecord) => {
+        if (!vaultKey) {
+            setError('Vault key not available. Cannot save record.');
+            return;
+        }
+
+        // Encrypt sensitive fields before sending
+        const encryptedRecord = {
+            ...record,
+            password: await encryptVaultEntry(vaultKey, record.password),
+            notes: record.notes ? await encryptVaultEntry(vaultKey, record.notes) : '',
+        };
+
+        const success = await performMutation(
+            apiRequest(
+                editingRecord ? `/api/vault/records/${editingRecord.id}/` : '/api/vault/records/',
+                {
+                    method: editingRecord ? 'PUT' : 'POST',
+                    body: encryptedRecord,
+                    requiresAuth: true
+                }
+            ));
+        if (success) {
+            setEditingRecord(undefined);
+        }
+    }
+    
     
     return (
         <div className={styles.vaultContainer}>
             <div className={styles.vaultContent}>
                 <h1>Vault</h1>
+
+                {loading && (
+                    <Spacer paddingY="xl">
+                        <LoadingSpinner size="large" text="Loading your vault..." />
+                    </Spacer>
+                )}
+
+                {error && <p style={{ color: 'var(--color-error)' }}>Error: {error}</p>}
+
+                {!loading && !error && (
                 <div className={styles.vaultLayout}>
                     <div className={styles.leftColumn}>
                         <VaultList 
@@ -143,6 +178,7 @@ export const VaultPage = () => {
                         />
                     </div>
                     <div className={styles.rightColumn}>
+
                         {editingRecord !== undefined && (
                             <RecordForm 
                                 record={editingRecord} 
@@ -150,6 +186,7 @@ export const VaultPage = () => {
                                 onCancel={onCancel} 
                             />
                         )}
+                        
                         {selectedRecord && editingRecord === undefined && (
                             <RecordDetails 
                                 record={selectedRecord} 
@@ -159,6 +196,7 @@ export const VaultPage = () => {
                         )}
                     </div>
                 </div>
+            )}
             </div>
         </div>
     )

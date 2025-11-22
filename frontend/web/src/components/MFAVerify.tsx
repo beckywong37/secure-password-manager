@@ -12,27 +12,49 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
 import { apiRequest } from "../utils/http/apiRequest";
+import { useVaultKey } from '../contexts/useVaultKey';
 import { Button } from './Button';
 import { Input } from './Input';
 import { Spacer } from './Spacer';
 
+type MFAVerifySuccessResponse = {
+  access: string;
+  refresh: string;
+  vault_key: string;  // hex-encoded vault key from backend
+};
+
+type MFAVerifyErrorResponse = {
+  error?: string | Record<string, string[]>;
+  detail?: string | Record<string, string[]>;
+};
+
+export type MFAVerifyResponse = 
+  | MFAVerifySuccessResponse
+  | MFAVerifyErrorResponse;
+
+
+
 export default function MFAVerifyForm() {
   const [mfaCode, setMfaCode] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setVaultKey } = useVaultKey();
 
   // Runs when user submits form
   async function submitMFAForm(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
     if (!mfaCode || mfaCode.length !== 6) {
       setError("Please enter a valid 6-digit MFA code");
+      setIsLoading(false);
       return;
     }
 
     try {
-      const response = await apiRequest("/api/auth/mfa-verify/", {
+      const response = await apiRequest<MFAVerifyResponse>("/api/auth/mfa-verify/", {
         method: "POST",
         body: { mfa_code: mfaCode },
         suppressErrors: true
@@ -41,7 +63,7 @@ export default function MFAVerifyForm() {
       // Return descriptive error message if necessary
       const status = response?.status ?? 200;
       if (status !== 200) {
-        let errorResponse = response.data?.detail || response.data?.error || response.message;
+        let errorResponse = (response.data as MFAVerifyErrorResponse)?.detail || (response.data as MFAVerifyErrorResponse)?.error || response.message;
 
         if (typeof errorResponse === "object") {
           const firstKey = Object.keys(errorResponse)[0];
@@ -57,6 +79,12 @@ export default function MFAVerifyForm() {
         return;
       }
 
+      // Store vault key in context for encryption/decryption
+      const successData = response.data as MFAVerifySuccessResponse;
+      if (successData.vault_key) {
+        setVaultKey(successData.vault_key);
+      }
+
       // Force SessionManager to run and redirect to /vault
       navigate("/mfa/verify?refresh", { replace: true });
       return;
@@ -65,6 +93,7 @@ export default function MFAVerifyForm() {
       setError("A network or server error occurred");
 
     } finally {
+      setIsLoading(false);
       setMfaCode("");
     }
   }
@@ -97,7 +126,7 @@ export default function MFAVerifyForm() {
         />
 
         <Spacer marginTop="sm">
-          <Button type="submit" variant="primary" fluid>
+          <Button type="submit" variant="primary" fluid isLoading={isLoading}>
             Verify
           </Button>
         </Spacer>

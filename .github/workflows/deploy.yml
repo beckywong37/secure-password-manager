@@ -127,7 +127,7 @@ jobs:
           echo "Verifying database tables..."
           python - <<'PY'
           import os
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'password_manager.settings')
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'password_manager.settings.deployment')
           import django
           django.setup()
           from django.db import connection
@@ -168,6 +168,10 @@ jobs:
       - name: Install frontend deps
         working-directory: ./frontend/web
         run: pnpm install
+
+      - name: Validate frontend (test, lint, typecheck)
+        working-directory: ./frontend/web
+        run: pnpm validate
 
       - name: Build frontend
         working-directory: ./frontend/web

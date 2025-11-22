@@ -11,13 +11,22 @@ Features:
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../pages/Page.module.css";
-import { apiRequest } from "../utils/http/apiRequest";
+import { apiRequest, type ApiResponse } from "../utils/http/apiRequest";
 import { Button } from './Button';
 import { Spacer } from './Spacer';
+import { LoadingSpinner } from './LoadingSpinner';
+
+interface MFASetupResponse {
+  qr_code: string;
+  error?: {
+    mfa_token?: string;
+  };
+}
 
 export default function MFASetupForm() {
   const [qrCode, setQrCode] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   // Fetch QR code after component is rendered
@@ -27,21 +36,24 @@ export default function MFASetupForm() {
 
   async function getQRCode() {
     try {
-      const response = await apiRequest("/api/auth/mfa-setup/", {
+      setIsLoading(true);
+      const response = await apiRequest<MFASetupResponse>("/api/auth/mfa-setup/", {
         method: "POST",
       });
 
-      if (response.qr_code) {
-        setQrCode(response.qr_code);
+      if (response.data.qr_code) {
+        setQrCode(response.data.qr_code);
         return;
       }
 
       setError("Failed to load MFA QR code");
       
-    } catch (err: any) {
+    } catch (err) {
       // Return descriptive error response if available
-      const errorResponse = err?.data?.error?.mfa_token;
+      const errorResponse = (err as ApiResponse<MFASetupResponse>)?.data?.error?.mfa_token;
       setError(errorResponse || "A network or server error occurred.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -60,14 +72,14 @@ export default function MFASetupForm() {
 
       <Spacer marginBottom="md">
         <div style={{ textAlign: "center" }}>
-          {qrCode ? (
+          {isLoading && <LoadingSpinner size="large" text="Loading QR code..." />}
+          
+          {!isLoading && qrCode && (
             <img src={qrCode} alt="MFA Setup QR Code" style={{ width: 200, height: 200 }} />
-          ) : (
-            <p style={{ color: "gray" }}>Loading QR code...</p>
           )}
 
           {/* Display error message */}
-          {error && (
+          {!isLoading && error && (
             <Spacer marginTop="sm">
               <p style={{ color: "var(--color-error)", fontSize: "0.9em" }}>
                 {error}

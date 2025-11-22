@@ -6,8 +6,7 @@ Application URL: https://secure-password-manager-475618.uc.r.appspot.com/
 ```bash
 python3 -m venv venv
 ```
-3. Copy and save the `.env.template` file as a `.env` and set the environment variable values.
-4. Activate virtual environment and install dependencies (as they might have changed)
+3. Activate virtual environment and install dependencies (as they might have changed)
 ```bash
 source venv/bin/activate
 pip install -r requirements.txt
@@ -15,24 +14,16 @@ pip install -r requirements.txt
 
 ## How to start Application in Development Mode
 
-1. Create a `.env` file for local development:
-```bash
-cp .env.template .env
-```
-Ensure it contains:
-```
-DJANGO_SETTINGS_MODULE=password_manager.settings.local
-```
-
-2. Run Django server locally
+1. Run Django server locally
 ```bash
 source venv/bin/activate
 pip install -r requirements.txt
+export DJANGO_SETTINGS_MODULE=password_manager.settings.local
 python manage.py migrate
 python manage.py runserver
 ```
 
-3. Run Front-end server locally in another terminal
+2. Run Front-end server locally in another terminal
 ```bash
 cd frontend/web
 nvm use
@@ -56,9 +47,9 @@ pnpm install
 pnpm run build
 cd ../..
 ```
-3. Update your `.env` to have 
-```
-DJANGO_SETTINGS_MODULE=password_manager.settings.local_deployment
+3. Set your environment with:
+```bash
+export DJANGO_SETTINGS_MODULE=password_manager.settings.local_deployment
 ```
 4. Collect React Frontend and Django static files
 ```bash
@@ -86,15 +77,9 @@ The project uses a multi-file settings structure:
 
 ### Using Local Development Settings
 
-For local development (when running Django server and Vite server separately), override the settings module by creating a `.env` file in the project root:
-
-```bash
-cp .env.template .env
+Update your config file by running
 ```
-
-Ensure your `.env` file contains:
-```
-DJANGO_SETTINGS_MODULE=password_manager.settings.local
+export DJANGO_SETTINGS_MODULE=password_manager.settings.local
 ```
 
 This will:
@@ -108,6 +93,11 @@ This will:
 The deployment settings are used automatically when `DJANGO_SETTINGS_MODULE` is not set or when explicitly set to `password_manager.settings.deployment`.
 
 For deployment, set the required environment variables in `app.yaml` or your CI/CD pipeline.
+
+## How to Check Types
+```bash
+pnpm typecheck
+```
 
 ## How to Check Code Coverage
 Helpful Resource: https://docs.djangoproject.com/en/5.2/topics/testing/advanced/#integration-with-coverage-py 

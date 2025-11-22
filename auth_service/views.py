@@ -25,8 +25,17 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken, TokenError
-from auth_service.serializers import RegisterSerializer, LoginSerializer, MFASetupSerializer, MFAVerifySerializer
+from rest_framework_simplejwt.tokens import (
+    AccessToken,
+    RefreshToken,
+    TokenError,
+)
+from auth_service.serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    MFASetupSerializer,
+    MFAVerifySerializer,
+)
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
@@ -53,7 +62,7 @@ def get_csrf_token(request):
     return JsonResponse({"csrftoken": csrf_token})
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def get_auth_status(request):
     """
     API endpoint for user sessions
@@ -70,10 +79,10 @@ def get_auth_status(request):
             "has_mfa_verify_token": bool
         }
     """
-    access_token = request.COOKIES.get('accesstoken')
-    refresh_token = request.COOKIES.get('refreshtoken')
-    mfa_setup_token = request.COOKIES.get('mfa-setup-token')
-    mfa_verify_token = request.COOKIES.get('mfa-verify-token')
+    access_token = request.COOKIES.get("accesstoken")
+    refresh_token = request.COOKIES.get("refreshtoken")
+    mfa_setup_token = request.COOKIES.get("mfa-setup-token")
+    mfa_verify_token = request.COOKIES.get("mfa-verify-token")
 
     auth_status = {
         "is_authenticated": False,
@@ -87,7 +96,7 @@ def get_auth_status(request):
         try:
             # Validate signature and expiration
             AccessToken(access_token)
-            auth_status['is_authenticated'] = True
+            auth_status["is_authenticated"] = True
         except TokenError:
             # Token is invalid or expired
             pass
@@ -97,23 +106,23 @@ def get_auth_status(request):
         try:
             # Validate signature and expiration
             RefreshToken(refresh_token)
-            auth_status['has_refresh_token'] = True
+            auth_status["has_refresh_token"] = True
         except TokenError:
             # Token is invalid or expired
             pass
 
     # Check if user is in MFA verification stage
     elif mfa_verify_token:
-        auth_status['has_mfa_verify_token'] = True
+        auth_status["has_mfa_verify_token"] = True
 
     # Check if user is in MFA setup stage
     elif mfa_setup_token:
-        auth_status['has_mfa_setup_token'] = True
+        auth_status["has_mfa_setup_token"] = True
 
     return Response(auth_status)
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class RegisterView(generics.CreateAPIView):
     """
     API endpoint for registering a new user.
@@ -129,6 +138,7 @@ class RegisterView(generics.CreateAPIView):
     Permissions:
         - AllowAny: Anyone can call the endpoint without authtication
     """
+
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
@@ -147,26 +157,31 @@ class RegisterView(generics.CreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": e.detail}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = serializer.save()
-        vault_key = serializer.validated_data['vault_key']
+        vault_key = serializer.validated_data["vault_key"]
 
         # Set short lived HTTP-only cookie for MFA flow
-        setup_token = create_signed_token(data={'user_id': user.id, 'vault_key': vault_key.hex()}, salt='mfa-setup')
+        setup_token = create_signed_token(
+            data={"user_id": user.id, "vault_key": vault_key.hex()},
+            salt="mfa-setup",
+        )
         response = Response(serializer.data, status=status.HTTP_201_CREATED)
         response.set_cookie(
-            'mfa-setup-token',
+            "mfa-setup-token",
             setup_token,
             max_age=300,
             httponly=True,
-            samesite='Strict'
+            samesite="Strict",
         )
 
         return response
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class LoginView(generics.CreateAPIView):
     """
     API endpoint for authenticating an existing user.
@@ -182,6 +197,7 @@ class LoginView(generics.CreateAPIView):
     Permissions:
         - AllowAny: Anyone can call the endpoint without authentication
     """
+
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
@@ -202,10 +218,12 @@ class LoginView(generics.CreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": e.detail}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        user = serializer.validated_data['user']
-        vault_key = serializer.validated_data['vault_key']
+        user = serializer.validated_data["user"]
+        vault_key = serializer.validated_data["vault_key"]
 
         # Check if user has a confirmed TOTP device
         device = default_device(user)
@@ -213,35 +231,44 @@ class LoginView(generics.CreateAPIView):
         if device:
             # MFA verification required
             response = Response(serializer.data, status=status.HTTP_200_OK)
-            response.data.update({
-                "is_mfa_setup": True,
-                "message": "MFA configured. Proceed to verification."
-            })
-            mfa_token_salt, cookie_name = 'mfa-verify', 'mfa-verify-token'
+            response.data.update(
+                {
+                    "is_mfa_setup": True,
+                    "message": "MFA configured. Proceed to verification.",
+                }
+            )
+            mfa_token_salt, cookie_name = "mfa-verify", "mfa-verify-token"
 
         else:
             # MFA setup required
-            response = Response(serializer.data, status=status.HTTP_403_FORBIDDEN)
-            response.data.update({
-                "is_mfa_setup": False,
-                "message": "MFA setup required. Proceed to enrollment."
-            })
-            mfa_token_salt, cookie_name = 'mfa-setup', 'mfa-setup-token'
+            response = Response(
+                serializer.data, status=status.HTTP_403_FORBIDDEN
+            )
+            response.data.update(
+                {
+                    "is_mfa_setup": False,
+                    "message": "MFA setup required. Proceed to enrollment.",
+                }
+            )
+            mfa_token_salt, cookie_name = "mfa-setup", "mfa-setup-token"
 
         # Set short lived HTTP-only cookie for MFA flow
-        mfa_token = create_signed_token(data={'user_id': user.id, 'vault_key': vault_key.hex()}, salt=mfa_token_salt)
+        mfa_token = create_signed_token(
+            data={"user_id": user.id, "vault_key": vault_key.hex()},
+            salt=mfa_token_salt,
+        )
         response.set_cookie(
             cookie_name,
             mfa_token,
             max_age=300,
             httponly=True,
-            samesite='Strict'
+            samesite="Strict",
         )
 
         return response
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class MFASetupView(generics.CreateAPIView):
     """
     API endpoint for initializing MFA setup (TOTP device and QR generation).
@@ -254,6 +281,7 @@ class MFASetupView(generics.CreateAPIView):
     Permissions:
         - AllowAny: MFA setup can be performed by any user post-registration
     """
+
     serializer_class = MFASetupSerializer
     permission_classes = [AllowAny]
 
@@ -270,34 +298,38 @@ class MFASetupView(generics.CreateAPIView):
                 - Sets 'mfa-verify-token' cookie for subsequent verification.
         """
         # Get token from cookie
-        mfa_token = request.COOKIES.get('mfa-setup-token')
+        mfa_token = request.COOKIES.get("mfa-setup-token")
         if not mfa_token:
             return Response({"error": "Missing MFA token."}, status=400)
 
         # Prepare data and send to serializer
-        data = {'mfa_token': mfa_token}
+        data = {"mfa_token": mfa_token}
         serializer = self.get_serializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": e.detail}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         data = serializer.save()
 
         # Successful qr code retrieval for setup
-        response = Response({"qr_code": data['qr_code']}, status=status.HTTP_200_OK)
+        response = Response(
+            {"qr_code": data["qr_code"]}, status=status.HTTP_200_OK
+        )
         response.set_cookie(
-            'mfa-verify-token',
-            data['mfa_token'],
+            "mfa-verify-token",
+            data["mfa_token"],
             max_age=300,
             httponly=True,
-            samesite='Strict'
+            samesite="Strict",
         )
 
         return response
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class MFAVerifyView(generics.CreateAPIView):
     """
     API endpoint for verifying MFA codes (TOTP) and issuing JWT tokens.
@@ -310,6 +342,7 @@ class MFAVerifyView(generics.CreateAPIView):
     Permissions:
         - AllowAny: Allows unauthenticated requests with valid MFA tokens
     """
+
     serializer_class = MFAVerifySerializer
     permission_classes = [AllowAny]
 
@@ -326,47 +359,52 @@ class MFAVerifyView(generics.CreateAPIView):
                 - 400 Bad Request: Invalid or missing MFA code/token.
         """
         # Get token from cookie
-        mfa_token = request.COOKIES.get('mfa-verify-token')
+        mfa_token = request.COOKIES.get("mfa-verify-token")
         if not mfa_token:
-            return Response({"error": "Missing MFA token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Missing MFA token."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Prepare data and send to serializer
         data = {
-            'mfa_token': mfa_token,
-            'mfa_code': request.data.get('mfa_code')
+            "mfa_token": mfa_token,
+            "mfa_code": request.data.get("mfa_code"),
         }
         serializer = self.get_serializer(data=data)
         try:
             serializer.is_valid(raise_exception=True)
         except serializers.ValidationError as e:
-            return Response({"error": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": e.detail}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         # Successful validation
         jwt_tokens = serializer.save()
         response = Response(jwt_tokens, status=status.HTTP_200_OK)
-        response.delete_cookie('mfa-setup-token')
-        response.delete_cookie('mfa-verify-token')
+        response.delete_cookie("mfa-setup-token")
+        response.delete_cookie("mfa-verify-token")
 
         response.set_cookie(
-            'accesstoken',
-            jwt_tokens['access'],
+            "accesstoken",
+            jwt_tokens["access"],
             max_age=900,  # 15 minutes
-            httponly=True,
-            samesite='Strict'
+            httponly=False,
+            samesite="Strict",
         )
 
         response.set_cookie(
-            'refreshtoken',
-            jwt_tokens['refresh'],
+            "refreshtoken",
+            jwt_tokens["refresh"],
             max_age=86400,  # 1 day
             httponly=True,
-            samesite='Strict'
+            samesite="Strict",
         )
 
         return response
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class JWTTokenRefreshView(APIView):
     """
     API endpoint for refreshing JWT tokens.
@@ -374,6 +412,7 @@ class JWTTokenRefreshView(APIView):
     Permissions:
         - AllowAny: Anyone can call the endpoint without authentication
     """
+
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
@@ -389,10 +428,15 @@ class JWTTokenRefreshView(APIView):
                 - 400 Bad Response: invalid request
                 Includes refresh and access token cookies
         """
-        refresh_token = request.data.get('refresh') or request.COOKIES.get('refreshtoken')
+        refresh_token = request.data.get("refresh") or request.COOKIES.get(
+            "refreshtoken"
+        )
 
         if not refresh_token:
-            return Response({"error": "Missing refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Missing refresh token"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             refresh = RefreshToken(refresh_token)
@@ -400,36 +444,36 @@ class JWTTokenRefreshView(APIView):
 
             access = str(refresh.access_token)
 
-            response = Response({"access": access, "refresh": str(refresh)}, status=status.HTTP_200_OK)
-
-            response.set_cookie(
-                'accesstoken',
-                access,
-                max_age=900,  # 15 minutes
-                httponly=True,
-                samesite='Strict'
+            response = Response(
+                {"access": access, "refresh": str(refresh)},
+                status=status.HTTP_200_OK,
             )
 
             response.set_cookie(
-                'refreshtoken',
+                "accesstoken",
+                access,
+                max_age=900,  # 15 minutes
+                httponly=True,
+                samesite="Strict",
+            )
+
+            response.set_cookie(
+                "refreshtoken",
                 str(refresh),
                 max_age=86400,  # 1 day
                 httponly=True,
-                samesite='Strict'
+                samesite="Strict",
             )
 
             return response
 
         except TokenError as e:
             return Response(
-                {
-                    "detail": str(e)
-                },
-                status=status.HTTP_401_UNAUTHORIZED
+                {"detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED
             )
 
 
-@method_decorator(csrf_protect, name='dispatch')
+@method_decorator(csrf_protect, name="dispatch")
 class LogoutView(APIView):
     """
     API endpoint for logging out user by blacklisting refresh token.
@@ -437,6 +481,7 @@ class LogoutView(APIView):
     Permissions:
         - AllowAny: Anyone can call the endpoint without authentication
     """
+
     permission_classes = [AllowAny]
 
     def _logout_response(self, data, status):
@@ -444,9 +489,9 @@ class LogoutView(APIView):
         Helper to construct logout response and clear cookies from browser
         """
         response = Response(data, status)
-        response.delete_cookie('accesstoken')
-        response.delete_cookie('refreshtoken')
-        response.delete_cookie('csrftoken')
+        response.delete_cookie("accesstoken")
+        response.delete_cookie("refreshtoken")
+        response.delete_cookie("csrftoken")
 
         return response
 
@@ -462,13 +507,17 @@ class LogoutView(APIView):
                 - 200 OK: Logout successful
                 - 400 Bad Request: missing token
         """
-        refresh_token = request.data.get('refresh') or request.COOKIES.get('refreshtoken')
-        access_token = request.data.get('access') or request.COOKIES.get('accesstoken')
+        refresh_token = request.data.get("refresh") or request.COOKIES.get(
+            "refreshtoken"
+        )
+        access_token = request.data.get("access") or request.COOKIES.get(
+            "accesstoken"
+        )
 
         if not refresh_token and not access_token:
             return self._logout_response(
                 data={"error": "Missing token"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Blacklist refresh token
@@ -477,11 +526,7 @@ class LogoutView(APIView):
                 RefreshToken(refresh_token).blacklist()
             except TokenError as e:
                 return self._logout_response(
-                    data={"error": str(e)},
-                    status=status.HTTP_400_BAD_REQUEST
+                    data={"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-        return self._logout_response(
-            data='',
-            status=status.HTTP_200_OK
-        )
+        return self._logout_response(data="", status=status.HTTP_200_OK)

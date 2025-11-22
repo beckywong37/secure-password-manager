@@ -12,20 +12,21 @@ import { toBytes } from "./helpers";
 * @returns {Promise<string>} vault entry plaintext string
 */
 export const decryptVaultEntry = async (vaultKey: Uint8Array | string, data: Uint8Array | string): Promise<string> => {
+    const keyBytes = toBytes(vaultKey);
     const key = await crypto.subtle.importKey(
         'raw',
-        toBytes(vaultKey).buffer as ArrayBuffer,
+        keyBytes as BufferSource,
         'AES-GCM',
         false,
         ['encrypt', 'decrypt']
     );
 
     // Convert to bytes if needed
-    data = toBytes(data);
+    const dataBytes = toBytes(data);
 
     // Unpack nonce and ciphertext
-    const nonce = data.slice(0, 12);        // first 12 bytes is nonce
-    const ciphertext = data.slice(12);      // rest of bytes is ciphertext
+    const nonce = dataBytes.slice(0, 12);        // first 12 bytes is nonce
+    const ciphertext = dataBytes.slice(12);      // rest of bytes is ciphertext
 
     const decrypted = await crypto.subtle.decrypt(
         {
@@ -33,7 +34,7 @@ export const decryptVaultEntry = async (vaultKey: Uint8Array | string, data: Uin
             iv: nonce
         },
         key,
-        ciphertext.buffer as ArrayBuffer
+        ciphertext as BufferSource
     );
 
     return new TextDecoder().decode(decrypted);

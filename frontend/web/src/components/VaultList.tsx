@@ -7,14 +7,16 @@
 import {RecordItem} from './RecordItem';
 import {Button} from './Button';
 import type { FC } from 'react';
-import type { Record } from '../types/Record';
+import type { VaultRecord } from '../types/VaultRecord';
 import styles from './VaultList.module.css';
 
-export const VaultList:FC<{records: Record[], onAddRecord: () => void, onEditRecord: (record: Record) => void, onSelectRecord: (record: Record) => void}> = ({records, onAddRecord, onEditRecord, onSelectRecord}) => {
+export const VaultList:FC<{records: VaultRecord[], onAddRecord: () => void, onEditRecord: (record: VaultRecord) => void, onSelectRecord: (record: VaultRecord) => void}> = ({records, onAddRecord, onEditRecord, onSelectRecord}) => {
     return (
         <div className={styles.vaultList}>
             <Button onClick={onAddRecord} variant="primary">Add Record</Button>
-            {records.map((record) => (
+
+            { (records === null || records.length === 0) && <p>No records found. Add a record to get started.</p>}
+            { records !== null && records !== undefined && records.length > 0 && records.map((record) => (
                 <RecordItem key={record.id} record={record} onEditRecord={onEditRecord} onSelectRecord={onSelectRecord} />
             ))}
         </div>

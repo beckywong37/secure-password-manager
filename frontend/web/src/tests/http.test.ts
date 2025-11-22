@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
 * HTTP Utility Tests
 * 
@@ -17,15 +18,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { apiRequest } from "../utils/http/apiRequest";
-import * as authModule from "../utils/auth/hasAccessToken";
-
-if (typeof (globalThis as any).document === "undefined") {
-  (globalThis as any).document = { cookie: "" };
-}
 
 describe("apiRequest helper", () => {
   beforeEach(() => {
-    (globalThis as any).document.cookie = "";
+    globalThis.document.cookie = "";
     vi.restoreAllMocks();
   });
 
@@ -34,7 +30,7 @@ describe("apiRequest helper", () => {
   });
 
   it("throws when non-GET request and csrftoken is missing", async () => {
-    (globalThis as any).document.cookie = ""; // no csrftoken
+    globalThis.document.cookie = ""; // no csrftoken
 
     await expect(
       apiRequest("/api/do-something", { method: "POST" })
@@ -51,7 +47,7 @@ describe("apiRequest helper", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const res = await apiRequest("/ping", { method: "GET" });
-    expect(res).toEqual({ pong: true });
+    expect(res).toEqual({ status: 200, message: "OK", data: { pong: true } });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [calledUrl, options] = fetchMock.mock.calls[0];
@@ -59,33 +55,32 @@ describe("apiRequest helper", () => {
     expect((options as RequestInit).method).toBe("GET");
     expect((options as RequestInit).credentials).toBe("include");
     // No X-CSRFToken header since csrftoken missing
-    const headers = (options as any).headers as Record<string, string>;
+    const headers = (options as RequestInit).headers as Record<string, string>;
     expect(headers["X-CSRFToken"]).toBeUndefined();
   });
 
-  it("throws when requiresAuth and hasAccessToken reports unauthenticated", async () => {
+  it("adds Authorization header with Bearer token when requiresAuth is true", async () => {
     // ensure csrftoken present for non-GET logic not to interfere
-    (globalThis as any).document.cookie = "csrftoken=abc";
-    const spy = vi.spyOn(authModule, "hasAccessToken").mockResolvedValue({
-      authenticated: false,
-      refreshed: false,
-      needsLogin: true,
+    globalThis.document.cookie = "csrftoken=abc; accesstoken=mytoken123";
+    
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      json: async () => ({ pong: true }),
     });
+    vi.stubGlobal("fetch", fetchMock);
 
-    await expect(
-      apiRequest("/protected", { requiresAuth: true })
-    ).rejects.toMatchObject({ status: 401 });
+    await apiRequest("/protected", { requiresAuth: true });
 
-    expect(spy).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const options = fetchMock.mock.calls[0][1] as RequestInit;
+    const headers = (options.headers || {}) as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer mytoken123");
   });
 
-  it("calls hasAccessToken when requiresAuth and proceeds when authenticated", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
-    const spy = vi.spyOn(authModule, "hasAccessToken").mockResolvedValue({
-      authenticated: true,
-      refreshed: false,
-      needsLogin: false,
-    });
+  it("proceeds with request when requiresAuth and access token is present in cookies", async () => {
+    globalThis.document.cookie = "csrftoken=abc; accesstoken=validtoken";
 
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -96,13 +91,16 @@ describe("apiRequest helper", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const res = await apiRequest("/protected", { requiresAuth: true });
-    expect(res).toEqual({ secret: "ok" });
-    expect(spy).toHaveBeenCalled();
+    expect(res).toEqual({ status: 200, message: "OK", data: { secret: "ok" } });
     expect(fetchMock).toHaveBeenCalled();
+    
+    const options = fetchMock.mock.calls[0][1] as RequestInit;
+    const headers = (options.headers || {}) as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer validtoken");
   });
 
   it("builds query string when query provided", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
+    globalThis.document.cookie = "csrftoken=abc";
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -118,7 +116,7 @@ describe("apiRequest helper", () => {
   });
 
   it("sends JSON body and includes X-CSRFToken + custom headers", async () => {
-    (globalThis as any).document.cookie = "csrftoken=thetoken";
+    globalThis.document.cookie = "csrftoken=thetoken";
     const payload = { name: "bob" };
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -146,7 +144,7 @@ describe("apiRequest helper", () => {
   });
 
   it("returns null when response has no JSON body", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
+    globalThis.document.cookie = "csrftoken=abc";
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -158,11 +156,11 @@ describe("apiRequest helper", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const res = await apiRequest("/no-json");
-    expect(res).toBeNull();
+    expect(res).toEqual({ status: 200, message: "OK", data: null });
   });
 
   it("returns structured error when suppressErrors is true and response !ok", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
+    globalThis.document.cookie = "csrftoken=abc";
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
@@ -180,7 +178,7 @@ describe("apiRequest helper", () => {
   });
 
   it("throws on non-ok response when suppressErrors is false", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
+    globalThis.document.cookie = "csrftoken=abc";
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
@@ -196,20 +194,28 @@ describe("apiRequest helper", () => {
     });
   });
 
-  it("throws 'Unable to verify authentication' when authenticated=false but needsLogin=false", async () => {
-    (globalThis as any).document.cookie = "csrftoken=abc";
-    vi.spyOn(authModule, "hasAccessToken").mockResolvedValue({
-        authenticated: false,
-        refreshed: false,
-        needsLogin: false, 
+  it("sends request with Bearer null when requiresAuth but no access token in cookies", async () => {
+    globalThis.document.cookie = "csrftoken=abc"; // no accesstoken
+    
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 403,
+      statusText: "Forbidden",
+      json: async () => ({ detail: "Invalid or missing token" }),
     });
+    vi.stubGlobal("fetch", fetchMock);
 
     await expect(
       apiRequest("/protected", { requiresAuth: true })
     ).rejects.toMatchObject({
-      status: 401,
-      message: "Unable to verify authentication",
+      status: 403,
+      message: "Forbidden",
     });
+    
+    // Verify it still sent the Authorization header (with null token from missing cookie)
+    const options = fetchMock.mock.calls[0][1] as RequestInit;
+    const headers = (options.headers || {}) as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer null");
   });
 
 

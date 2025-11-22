@@ -47,8 +47,8 @@ describe('Vault Crypto Helpers', () => {
             const input = 'Hello, world!';
             const output = toBytes(input);
 
-            // Check output is Uint8Array
-            expect(output).toBeInstanceOf(Uint8Array);
+            // Check output is Uint8Array (check constructor name for jsdom compatibility)
+            expect(output.constructor.name).toBe('Uint8Array');
 
             // Check output does not reference same input object
             expect(output).not.toBe(input);
@@ -65,8 +65,8 @@ describe('Vault Crypto Helpers', () => {
             };
             const output = toBytes(input);
 
-            // Check output is Uint8Array
-            expect(output).toBeInstanceOf(Uint8Array);
+            // Check output is Uint8Array (check constructor name for jsdom compatibility)
+            expect(output.constructor.name).toBe('Uint8Array');
 
             // Check output does not reference same input object
             expect(output).not.toBe(input);
@@ -78,6 +78,7 @@ describe('Vault Crypto Helpers', () => {
 
         it('throws error for unsupported type', () => {
             const input = 1234;
+            // @ts-expect-error - input is not a string or Uint8Array
             expect(() => toBytes(input)).toThrow(TypeError);
         });
     });
@@ -118,6 +119,7 @@ describe('Vault Crypto Helpers', () => {
                 "function": "toHex",
                 "test": "throws error"
             };
+            // @ts-expect-error - input is not a string or Uint8Array
             expect(() => toHex(input)).toThrow(TypeError);
         });
     });
@@ -150,16 +152,19 @@ describe('Vault Crypto Helpers', () => {
 
         it('returns false for non-string input (number)', () => {
             const input = 1234;
+            // @ts-expect-error - input is not a string
             expect(isValidHex(input)).toBe(false);
         });
 
         it('returns false for non-string input (object)', () => {
             const input = {"hex": "0a1b2c3d4e"};
+            // @ts-expect-error - input is not a string
             expect(isValidHex(input)).toBe(false);
         });
 
         it('returns false for non-string input (Uint8Array)', () => {
             const input = new Uint8Array([0x0a, 0x0b]);
+            // @ts-expect-error - input is not a string
             expect(isValidHex(input)).toBe(false);
         });
     });
@@ -186,11 +191,13 @@ describe('Vault Crypto Utilities', () => {
         it('throws for unsupported vaultKey type', async () => {
             const plaintext = 'P@ssw0rd!';
             const unsupportedVaultKeyType = 123456;
+            // @ts-expect-error - input is not a string or Uint8Array
             await expect(encryptVaultEntry(unsupportedVaultKeyType, plaintext)).rejects.toThrow(TypeError);
         });
 
         it('throws for unsupported data type', async () => {
             const unsupportedDataType = 12345;
+            // @ts-expect-error - input is not a string or object
             await expect(encryptVaultEntry(vaultKey, unsupportedDataType)).rejects.toThrow(TypeError);
         });
     });

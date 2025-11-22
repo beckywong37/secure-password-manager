@@ -6,15 +6,20 @@ The conversation transcript can be found here: `GenAI_transcripts/2025_11_16_Cop
 
 
 import { getCookie } from "../cookies/getCookie";
-import { hasAccessToken, type AccessTokenResult } from "../auth/hasAccessToken";
 
-interface ApiOptions {
+interface ApiOptions<TBody = unknown> {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: Record<string, unknown>;
+  body?: TBody;
   query?: Record<string, string>;
   headers?: Record<string, string>;
   requiresAuth?: boolean;
   suppressErrors?: boolean;
+}
+
+export interface ApiResponse<T = unknown> {
+  status: number;
+  message: string;
+  data: T;
 }
 
 /**
@@ -22,21 +27,12 @@ interface ApiOptions {
 * - Automatically refreshes access token (via hasAccessToken)
 * - Handles CSRF token
 * - Handles query params
-* - Automatically JSON encodes/decodes
-* @param {string} url - The API endpoint URL.
-* @param {ApiOptions} [options={}] - Optional request configuration.
-* @param {("GET"|"POST"|"PUT"|"PATCH"|"DELETE")} [options.method="GET"] - HTTP method.
-* @param {Record<string, unknown>} [options.body] - JSON request payload.
-* @param {Record<string, string>} [options.query] - Query parameters appended to the URL.
-* @param {Record<string, string>} [options.headers] - Additional headers to include.
-* @param {boolean} [options.requiresAuth=false] - Whether the request needs a valid JWT.
-* @param {boolean} [options.suppressErrors=false] - If true, API errors are returned instead of thrown.
-* @returns {Promise<T>} Resolves with the parsed JSON response.
+* - Automatically JSON encodes/decodes* 
 */
-export async function apiRequest<T = any>(
+export async function apiRequest<T = unknown, TBody = unknown>(
   url: string,
-  options: ApiOptions = {}
-): Promise<T> {
+  options: ApiOptions<TBody> = {}
+): Promise<ApiResponse<T>> {
   const {
     method = "GET",
     body,
@@ -55,13 +51,8 @@ export async function apiRequest<T = any>(
   }
 
   if (requiresAuth) {
-    const result: AccessTokenResult = await hasAccessToken();
-    
-    // No access or refresh token, force user to re-login
-    if (!result.authenticated) {
-    const message = result.needsLogin ? "Not authenticated" : "Unable to verify authentication";
-      throw { status: 401, message: message };
-    }
+    const accessToken = getCookie("accesstoken");
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
   // Build final URL with query parameters
@@ -90,7 +81,7 @@ export async function apiRequest<T = any>(
   const response = await fetch(finalUrl, fetchOptions);
 
   // Parse JSON response
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = await response.json();
   } catch {
@@ -103,7 +94,7 @@ export async function apiRequest<T = any>(
         status: response.status,
         message: response.statusText,
         data,
-      } as T;
+      } as ApiResponse<T>;
     }
 
     throw {
@@ -113,5 +104,9 @@ export async function apiRequest<T = any>(
     };
   }
 
-  return data as T;
+  return {
+    status: response.status,
+    message: response.statusText,
+    data,
+  } as ApiResponse<T>;
 }

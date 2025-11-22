@@ -23,6 +23,7 @@ import { useEffect } from "react";
 import { ensureCSRFToken } from "./utils/cookies";
 
 import { SessionManager } from "./components/SessionManager/SessionManager";
+import { VaultKeyProvider } from "./contexts/VaultKeyProvider";
 import LoginPage from "./pages/Login";
 import MFAPage from "./pages/MFA";
 import GeneratorPage from "./pages/Generator";
@@ -42,26 +43,28 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <SessionManager>
-        <div className={styles.appContainer}>
-          <Spacer padding="md">
-            <NavBar />
+      <VaultKeyProvider>
+        <SessionManager>
+          <div className={styles.appContainer}>
+            <Spacer padding="md">
+              <NavBar />
 
-            <Routes>
-              <Route path="/" element={<LoginPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              
-              <Route path="/mfa" element={<MFAPage />}>
-                <Route path="setup" element={<MFASetupForm />} />
-                <Route path="verify" element={<MFAVerifyForm />} />
-              </Route>
-              
-              <Route path="/generator" element={<GeneratorPage />} />
-              <Route path="/vault" element={<VaultPage />} />
-            </Routes>
-          </Spacer>
-        </div>
-      </SessionManager>
+              <Routes>
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                
+                <Route path="/mfa" element={<MFAPage />}>
+                  <Route path="setup" element={<MFASetupForm />} />
+                  <Route path="verify" element={<MFAVerifyForm />} />
+                </Route>
+                
+                <Route path="/generator" element={<GeneratorPage />} />
+                <Route path="/vault" element={<VaultPage />} />
+              </Routes>
+            </Spacer>
+          </div>
+        </SessionManager>
+      </VaultKeyProvider>
     </BrowserRouter>
   );
 }

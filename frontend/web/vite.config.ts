@@ -4,12 +4,17 @@
 // The conversation transcript linked below documents the GenAI Interaction that led to my code.
 // ../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
 
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/tests/setup.ts'],
+  },
   base: process.env.ENV === 'local' ? '/' : '/static/',  // Prepend /static/ to all asset URLs in production
   server: {
     proxy: {
@@ -22,6 +27,10 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         secure: false,
+      },
+      '/api/vault': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
       },
     },
   },

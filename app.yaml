@@ -4,6 +4,11 @@
 #  The conversation transcript linked below documents the GenAI Interaction that led to my code.
 #  ../GenAI_transcripts/2025_11_16_Cursor_fixing_deploy_issues.md
 
+# GenAI Citation for April:
+# Portions of this code related to instance class were generated with the help of Cursor with
+#  Claude-4.5-sonnet model.
+#  The conversation transcript linked below documents the GenAI Interaction that led to my code.
+#  ../GenAI_transcripts/2025_11_24_Cursor_Fix_Web_Error.md
 runtime: python311
 
 env_variables:
@@ -21,8 +26,12 @@ env_variables:
 # WhiteNoise middleware handles static files through Django
 # No static handlers needed - all requests go through Django/WhiteNoise
 
+# Instance class: F2 provides 256MB RAM (default F1 has only 128MB)
+# Upgraded to F2 to handle Django + crypto operations + database connections
+instance_class: F2
+
 automatic_scaling:
   max_instances: 1
   min_instances: 0
   target_cpu_utilization: 0.65
-  max_concurrent_requests: 80
+  max_concurrent_requests: 20

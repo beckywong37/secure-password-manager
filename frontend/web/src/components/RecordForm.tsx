@@ -4,6 +4,7 @@
 // ../GenAI_transcripts/2025_11_15_Cursor_refactor_UI.md
 // ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
 // ../GenAI_transcripts/2025_11_18_Cursor_RecordForm_UI_refactor.md
+// ../GenAI_transcripts/2025_11_24_Cursor_Error_Message_Display.md
 
 import { useState, type FC, type FormEvent } from "react";
 import type { VaultRecord } from "../types/VaultRecord";
@@ -13,7 +14,14 @@ import {Button} from "./Button";
 import {Input, Textarea} from "./Input";
 import styles from "./RecordForm.module.css";
 
-export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: VaultRecord) => Promise<void>, onCancel: () => void}> = ({record, onSubmit, onCancel}) => {
+interface RecordFormProps {
+    record: VaultRecord | null;
+    onSubmit: (record: VaultRecord) => Promise<void>;
+    onCancel: () => void;
+    fieldErrors?: Record<string, string[]>;
+}
+
+export const RecordForm:FC<RecordFormProps> = ({record, onSubmit, onCancel, fieldErrors = {}}) => {
 
     const [formState, setFormState] = useState<Pick<VaultRecord, 'title' | 'username' | 'password' | 'email' | 'url' | 'notes'>>({
         title: record?.title ?? '',
@@ -64,6 +72,7 @@ export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: Vault
                 value={formState.title}
                 required
                 onChange={(e) => setFormState({...formState, title: e.target.value})}
+                error={fieldErrors.title?.[0]}
             />
             <Input
                 label="Username:"
@@ -71,6 +80,7 @@ export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: Vault
                 value={formState.username}
                 required
                 onChange={(e) => setFormState({...formState, username: e.target.value})}
+                error={fieldErrors.username?.[0]}
             />
             <Input
                 label="Password:"
@@ -79,12 +89,14 @@ export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: Vault
                 required
                 onChange={(e) => setFormState({...formState, password: e.target.value})}
                 secondaryRightAdornment={<PasswordToggleButton />}
+                error={fieldErrors.password?.[0]}
             />
             <Input
                 label="Email:"
                 type="email"
                 value={formState.email}
                 onChange={(e) => setFormState({...formState, email: e.target.value})}
+                error={fieldErrors.email?.[0]}
                 helperText="Optional - Associated email address"
             />
             <Input
@@ -92,12 +104,14 @@ export const RecordForm:FC<{record: VaultRecord | null, onSubmit: (record: Vault
                 type="url"
                 value={formState.url}
                 onChange={(e) => setFormState({...formState, url: e.target.value})}
+                error={fieldErrors.url?.[0]}
                 helperText="Optional - Website URL"
             />
             <Textarea
                 label="Notes:"
                 value={formState.notes}
                 onChange={(e) => setFormState({...formState, notes: e.target.value})}
+                error={fieldErrors.notes?.[0]}
                 helperText="Optional - Additional information"
             />
             <div className={styles.buttonGroup}>

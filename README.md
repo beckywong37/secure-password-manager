@@ -1,6 +1,23 @@
 Application URL: https://secure-password-manager-475618.uc.r.appspot.com/ 
 
-# Setup Instructions:
+# Setup Instructions
+
+## Required Programs:
+1. Git
+2. Python 3.11+
+3. nvm
+4. Node.js 22.12
+    - Install using nvm
+        ```bash
+        nvm install 22.12
+        nvm use 22.12
+        ```
+5. pnpm
+    ```bash
+    npm install -g pnpm
+    ```
+
+## Installation Instructions
 1. Clone repository locally
 2. Create a virtual environment to isolate project's dependencies from your global Python installation. This will also ensure all team members work with the same version of packages.
 ```bash

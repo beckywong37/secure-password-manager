@@ -30,6 +30,7 @@ export const NavBar = () => {
                 <Link to="/mfa/setup" className={styles.navLink}>MFA Setup Page</Link> */}
                 <Link to="/generator" className={styles.navLink}>Password Generator</Link>
                 <Link to="/vault" className={styles.navLink}>Vault</Link>
+                <Link to="/guide" className={styles.navLink}>User Guide</Link>
             </div>
             {isAuthenticated ? (
                 <Button variant="secondary" onClick={handleLogout}>

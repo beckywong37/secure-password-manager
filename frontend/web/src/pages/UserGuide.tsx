@@ -68,13 +68,16 @@ export default function UserGuidePage() {
         <div className={styles.mainContent}>
           <h1>User Guide</h1>
           <p className={styles.intro}>
-            Welcome to the Secure Password Manager! This guide will help you get started 
-            with managing your passwords securely.
+            Welcome to the Secure Password Manager! This was built for Oregon State University's CS467 Capstone project by Bobby Curley, Becky Wong, and April Wang.
+          </p>
+          <p>
+            This guide will help you get started with managing your passwords securely.
           </p>
           <p><em>Notes:</em> </p>
         <ul>
             <li>We recommend using a desktop browser for the best experience.</li>
             <li>The first time you open the web application, it may take a few seconds to load.</li>
+            <li>If you encounter any authentication issues, your session may have expired. Please log out and log back in.</li>
         </ul>
           
 

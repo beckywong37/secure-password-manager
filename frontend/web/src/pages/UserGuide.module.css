@@ -1,0 +1,240 @@
+/* GenAI Citation for April:
+ Portions of this code was generated with the help of Cursor with the Claude-4.5-sonnet model
+ The conversation in the file below documents the GenAI Interaction that led to my code.
+ ../GenAI_transcripts/2025_11_25_Cursor_UserGuide.md */
+
+.pageContainer {
+  min-height: 100vh;
+  padding: 20px 0 30px 0;
+  box-sizing: border-box;
+  background-color: var(--background-secondary);
+}
+
+.contentWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: var(--spacing-xl);
+  position: relative;
+  padding: 0 var(--spacing-lg);
+}
+
+.mainContent {
+  flex: 1;
+  max-width: calc(100% - 250px - var(--spacing-xl));
+  color: var(--text-primary);
+}
+
+.mainContent h1 {
+  font-size: 2.5em;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.mainContent h2 {
+  font-size: 1.8em;
+  color: var(--text-primary);
+  margin-top: var(--spacing-xxl);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--card-border);
+}
+
+.mainContent h3 {
+  font-size: 1.3em;
+  color: var(--text-primary);
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.mainContent p {
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+}
+
+.intro {
+  font-size: 1.1em;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.mainContent section {
+  scroll-margin-top: 120px; /* Account for navbar + some padding */
+}
+
+.mainContent ul {
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-xl);
+  color: var(--text-secondary);
+}
+
+.mainContent li {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+.mainContent strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Image styling */
+.imageContainer {
+  margin: var(--spacing-xl) 0;
+  padding: var(--spacing-md);
+  background-color: var(--card-background);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.guideImage {
+  max-width: 720px;
+  max-height: 420px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  cursor: zoom-in;
+  transition: opacity 0.2s ease;
+  object-fit: contain;
+}
+
+.guideImage:hover {
+  opacity: 0.9;
+}
+
+.imageCaption {
+  margin-top: var(--spacing-sm);
+  margin-bottom: 0;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Table of Contents */
+.tableOfContents {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.tableOfContents nav {
+  position: sticky;
+  top: 120px; /* Position below navbar */
+  background-color: var(--card-background);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.tocTitle {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--card-border);
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tocList li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.tocLink {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-family: inherit;
+}
+
+.tocLink:hover {
+  background-color: var(--background-hover);
+  color: var(--text-primary);
+}
+
+.tocLinkActive {
+  background-color: var(--button-primary-bg);
+  color: white !important;
+  font-weight: 600;
+}
+
+.tocLinkActive:hover {
+  background-color: var(--button-primary-bg-hover);
+}
+
+/* Image modal/lightbox */
+.imageModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: zoom-out;
+}
+
+.imageModalContent {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+.imageModalClose {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.imageModalClose:hover {
+  color: #ccc;
+}
+
+/* Responsive design */
+@media (max-width: 968px) {
+  .contentWrapper {
+    flex-direction: column;
+  }
+
+  .mainContent {
+    max-width: 100%;
+  }
+
+  .tableOfContents {
+    width: 100%;
+    order: -1; /* Move TOC above content on mobile */
+  }
+
+  .tableOfContents nav {
+    position: relative;
+    top: 0;
+  }
+}
+

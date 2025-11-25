@@ -27,6 +27,7 @@ import { VaultKeyProvider } from "./contexts/VaultKeyProvider";
 import LoginPage from "./pages/Login";
 import MFAPage from "./pages/MFA";
 import GeneratorPage from "./pages/Generator";
+import UserGuidePage from "./pages/UserGuide";
 import MFASetupForm from "./components/MFASetup";
 import MFAVerifyForm from "./components/MFAVerify";
 import { VaultPage } from './pages/Vault';
@@ -60,6 +61,7 @@ export default function App() {
                 
                 <Route path="/generator" element={<GeneratorPage />} />
                 <Route path="/vault" element={<VaultPage />} />
+                <Route path="/guide" element={<UserGuidePage />} />
               </Routes>
             </Spacer>
           </div>

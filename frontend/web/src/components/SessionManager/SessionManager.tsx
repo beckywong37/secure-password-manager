@@ -21,6 +21,11 @@
  * GenAI Citation:
  * Portions of this code structure and refactoring were generated with the help of GitHub Copilot.
  * The conversation transcript can be found here: `GenAI_transcripts/2025_11_16_CopilotSessionsRequests.md`
+ * 
+ * GenAI Citation for April:
+ * Portions of this code relating to public routes was generated with the help of Cursor with the Claude-4.5-sonnet model
+ * The conversation in the file below documents the GenAI Interaction that led to my code.
+ * ../GenAI_transcripts/2025_11_25_Cursor_UserGuide.md
  */
 
 import { useEffect, useState, type ReactNode, type FC } from "react";
@@ -112,9 +117,21 @@ export const SessionManager: FC<{ children: ReactNode }> = ({ children }) => {
       return;
     }
 
-    // For unauthenticated and MFA states, use the target route map
+    // Define public routes that don't require authentication
+    const publicRoutes = ["/login", "/generator", "/guide"];
+    const isOnPublicRoute = publicRoutes.some(route => location.pathname.startsWith(route));
+
+    // For unauthenticated users, allow access to public routes
+    if (sessionStatus === SessionStatus.UNAUTHENTICATED) {
+      if (!isOnPublicRoute) {
+        navigate("/login", { replace: true });
+      }
+      return;
+    }
+
+    // For MFA states, use the target route map
     const targetRouteMap: Record<SessionStatus, string> = {
-      [SessionStatus.UNAUTHENTICATED]: "/login",
+      [SessionStatus.UNAUTHENTICATED]: "/login", // not used due to above check
       [SessionStatus.MFA_SETUP_REQUIRED]: "/mfa/setup",
       [SessionStatus.MFA_VERIFY_REQUIRED]: "/mfa/verify",
       [SessionStatus.AUTHENTICATED]: "/vault", // fallback (not used due to above check)

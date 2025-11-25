@@ -389,7 +389,7 @@ class MFAVerifyView(generics.CreateAPIView):
             "accesstoken",
             jwt_tokens["access"],
             max_age=900,  # 15 minutes
-            httponly=False,
+            httponly=True,
             samesite="Strict",
         )
 

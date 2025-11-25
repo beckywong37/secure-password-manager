@@ -612,7 +612,9 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
         )
 
         # Add confirmed TOTP device
-        TOTPDevice.objects.create(user=self.user, name="default", confirmed=True)
+        TOTPDevice.objects.create(
+            user=self.user, name="default", confirmed=True
+        )
 
     def test_list_records_with_jwt_token(self):
         """
@@ -644,7 +646,9 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
         self.assertTrue(login_response.data.get("is_mfa_setup"))
 
         # Step 2: Verify MFA
-        vault_key = "06cf04db65c36c16cacc92a657de6bc0729da9e6b73c4342bf842bf58c434b46"
+        vault_key = (
+            "06cf04db65c36c16cacc92a657de6bc0729da9e6b73c4342bf842bf58c434b46"
+        )
         valid_token = create_signed_token(
             {"user_id": self.user.id, "vault_key": vault_key},
             "mfa-verify",
@@ -652,9 +656,11 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
         self.client.cookies["mfa-verify-token"] = valid_token
         verify_url = reverse("auth_service:mfa-verify-api")
         verify_data = {"mfa_code": "123456"}
-        
+
         with patch.object(TOTPDevice, "verify_token", return_value=True):
-            verify_response = self.client.post(verify_url, verify_data, format="json")
+            verify_response = self.client.post(
+                verify_url, verify_data, format="json"
+            )
 
         self.assertEqual(verify_response.status_code, status.HTTP_200_OK)
         self.assertIn("access", verify_response.data)
@@ -675,8 +681,8 @@ class RecordViewSetJWTAuthenticationTests(APITestCase):
             notes="",
         )
 
-        # Step 5: Use token to access protected endpoint
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+        # Step 5: Use token to access protected endpoint via cookie
+        self.client.cookies["accesstoken"] = token
 
         url = reverse("record-list")
         response = self.client.get(url, format="json")

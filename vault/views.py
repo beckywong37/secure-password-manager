@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from vault.models import Record
 from vault.serializers import RecordSerializer
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from auth_service.utils.authentication import CookieJWTAuthentication
 
 
 class RecordViewSet(viewsets.ModelViewSet):
@@ -20,7 +20,7 @@ class RecordViewSet(viewsets.ModelViewSet):
     serializer_class = RecordSerializer
     # Enforces that only authenticated users can access the vault endpoints
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [CookieJWTAuthentication]
 
     def get_queryset(self):
         """

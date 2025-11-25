@@ -9,6 +9,7 @@ Portions of this code was generated/refactored with the help of Cursor with the 
 The conversation in the file below documents the GenAI Interaction that led to my code.
 ../GenAI_transcripts/2025_11_14_Cursor_generate_dummy_data_for_Vault.md
 ../GenAI_transcripts/2025_11_14_Cursor_style_Vault_components.md
+../GenAI_transcripts/2025_11_24_Cursor_Error_Message_Display.md
 */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,12 +24,14 @@ import { apiRequest } from '../utils/http/apiRequest';
 import { useVaultKey } from '../contexts/useVaultKey';
 import { encryptVaultEntry } from '../utils/crypto/encryptVaultEntry';
 import { decryptVaultEntry } from '../utils/crypto/decryptVaultEntry';
+import { isObjectLike } from '../utils/typeguards/isObjectLike';
 
 
 export const VaultPage = () => {
     const [records, setRecords] = useState<VaultRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
     const [editingRecord, setEditingRecord] = useState<VaultRecord | null | undefined>(undefined);
     const [selectedRecord, setSelectedRecord] = useState<VaultRecord | null >(null);
@@ -42,6 +45,32 @@ export const VaultPage = () => {
         }
         return 'An error occurred';
       };
+
+      const resetFormErrors = () => {
+        setFieldErrors({});
+        setError(null);
+      }
+
+    const extractFieldErrors = (err: unknown): Record<string, string[]> => {
+        if (!isObjectLike(err)) {
+            return {};
+        }
+        if (!('data' in err)) {
+            return {};
+        }
+        const data = (err as { data: unknown }).data;
+        if (!isObjectLike(data)) {
+            return {};
+        }
+        // Filter out non-field error properties
+        const fieldErrors = Object.entries(data)
+            .filter(([, value]) => Array.isArray(value))
+            .reduce<Record<string, string[]>>((acc, [key, value]) => {
+                acc[key] = value as string[];
+                return acc;
+            }, {});
+        return fieldErrors;
+    };
 
     const fetchRecords = useCallback(async () => {
         if (!vaultKey) {
@@ -80,12 +109,17 @@ export const VaultPage = () => {
         apiCall: Promise<T>
     ): Promise<boolean> {
         try {
-            setError(null);
+            resetFormErrors();
             await apiCall;
             await fetchRecords(); // Re-fetch after any mutation
             return true;
         } catch (err) {
-            setError(getErrorMessage(err));
+            const fieldErrs = extractFieldErrors(err);
+            if (Object.keys(fieldErrs).length) {
+                setFieldErrors(fieldErrs);
+            } else {
+                setError(getErrorMessage(err));
+            }
             console.error('Error:', err);
             return false;
         }
@@ -97,6 +131,7 @@ export const VaultPage = () => {
 
     const onAddRecord = () => {
         setEditingRecord(null);
+        resetFormErrors();
         }
     
     const onEditRecord = (record: VaultRecord) => {
@@ -109,6 +144,7 @@ export const VaultPage = () => {
 
     const onCancel = () => {
         setEditingRecord(undefined);
+        resetFormErrors();
     }
 
     const onCloseDetails = () => {
@@ -184,6 +220,7 @@ export const VaultPage = () => {
                                 record={editingRecord} 
                                 onSubmit={handleRecordSubmit} 
                                 onCancel={onCancel} 
+                                fieldErrors={fieldErrors}
                             />
                         )}
                         

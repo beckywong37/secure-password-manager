@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from .views import FrontendIndexView
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -25,4 +25,6 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    # Catch-all: Serve index.html for any unmatched routes (with client-side routing) to prevent 404 errors on refresh
+    re_path(r"^.*$", FrontendIndexView.as_view(), name="frontend-catchall"),
 ]
